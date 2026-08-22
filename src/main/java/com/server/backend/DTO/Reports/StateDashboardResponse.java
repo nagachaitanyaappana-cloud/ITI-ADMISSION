@@ -6,10 +6,15 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class StateDashboardResponse {
-    private String itiCode;
-    private String itiName;
-    private String distName;
-    private int strength;
-    private int strengthFill;
-    private double fillPercentage;
+    private String districtName;
+    private String distCode;
+    private int total;
+    private int success;
+    private int pendingSid;
+    private int verified;
+    private int toBeVerified;
+    private int toBeUpdated;
+    private int phoneDuplicateRecords;
+    private int aadharDuplicateRecords;
+    private int emailDuplicateRecords;
 }

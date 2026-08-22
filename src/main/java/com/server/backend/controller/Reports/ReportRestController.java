@@ -1,16 +1,17 @@
 package com.server.backend.controller.Reports;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.server.backend.DTO.Reports.AdmissionReportDetailResponse;
 import com.server.backend.DTO.Reports.AdmissionReportResponse;
 import com.server.backend.DTO.Reports.AllResourceRoleResponse;
 import com.server.backend.DTO.Reports.ApiDashboardResponse;
+import com.server.backend.DTO.Reports.ApiListResponse;
 import com.server.backend.DTO.Reports.ApplicantMobileAddressResponse;
+import com.server.backend.DTO.Reports.ApplicantCountDistrictResponse;
 import com.server.backend.DTO.Reports.ApplicantReportResponse;
 import com.server.backend.DTO.Reports.CasteWiseAdmissionsResponse;
 import com.server.backend.DTO.Reports.DistrictOptionResponse;
@@ -31,6 +32,11 @@ import com.server.backend.DTO.Reports.TradeDurationSeatsResponse;
 import com.server.backend.DTO.Reports.TradeWiseReportResponse;
 import com.server.backend.DTO.Reports.TradeWiseVacantResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountResponse;
+import com.server.backend.DTO.Reports.VerifiedApplicationCountReportResponse;
+import com.server.backend.DTO.Reports.ItiTradeDisplayResponse;
+import com.server.backend.DTO.Reports.DscOptionsResponse;
+import com.server.backend.DTO.Reports.CurrentAdmissionPhaseResponse;
+import com.server.backend.DTO.Reports.TradeDisplayReportRequest;
 import com.server.backend.service.Reports.ReportService;
 import com.server.backend.service.Reports.TradeDisplayReportService;
 
@@ -51,44 +57,48 @@ public class ReportRestController {
     }
 
     // ========== 1 - API Dashboard (ITI) ==========
-    @Operation(summary = "1 - API Dashboard (ITI)", operationId = "01-iti-wise-status")
+    @Operation(summary = "1 - API Dashboard (ITI)")
     @GetMapping("/iti-wise-status")
-    public List<ItiWiseStatusResponse> getItiWiseStatus(
-            @RequestParam String year,
+    public ApiListResponse<ItiWiseStatusResponse> getItiWiseStatus(
+            @RequestParam(required = false) String year,
             @RequestParam(required = false, defaultValue = "All") String distCode,
             @RequestParam(required = false, defaultValue = "All") String itiCode,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getItiWiseStatus(year, distCode, itiCode, page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getItiWiseStatus(year, distCode, itiCode, page, safeSize));
     }
 
     // ========== 2 - Applicant Report ==========
-    @Operation(summary = "2 - Applicant Report", operationId = "02-applicant-report-by-phase")
+    @Operation(summary = "2 - Applicant Report")
     @GetMapping("/applicant-report-by-phase")
-    public List<ApplicantReportResponse> getApplicantReportByPhase(
+    public ApiListResponse<ApplicantReportResponse> getApplicantReportByPhase(
             @RequestParam String phase,
             @RequestParam(required = false) String year,
             @RequestParam(required = false, defaultValue = "All") String itiCode,
             @RequestParam(required = false, defaultValue = "All") String distCode,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getApplicantReportByPhase(phase, year, itiCode, distCode, page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getApplicantReportByPhase(phase, year, itiCode, distCode, page, safeSize));
+    }
+
+    // ========== 2a - Current Admission Phase ==========
+    @Operation(summary = "2a - Current Admission Phase")
+    @GetMapping("/current-admission-phase")
+    public CurrentAdmissionPhaseResponse getCurrentAdmissionPhase() {
+        return reportService.getCurrentAdmissionPhase();
     }
 
     // ========== 3 - Admission Report (ITI) ==========
-    @Operation(summary = "3 - Admission Report (ITI)", operationId = "03-admission-report-iti")
+    @Operation(summary = "3 - Admission Report (ITI)")
     @GetMapping("/admission-report-iti")
-    public List<AdmissionReportResponse> getAdmissionReportIti(
-            @RequestParam String year,
-            @RequestParam(required = false, defaultValue = "All") String caste,
-            @RequestParam(required = false, defaultValue = "All") String pwd) {
-        return reportService.getAdmissionReport(year, caste, pwd);
+    public ApiListResponse<AdmissionReportDetailResponse> getAdmissionReportIti() {
+        return new ApiListResponse<>(reportService.getAdmissionReportDetails());
     }
 
     // ========== 4 - DSC List ==========
-    @Operation(summary = "4 - DSC List", operationId = "04-dsc-full")
+    @Operation(summary = "4 - DSC List")
     @GetMapping("/dsc-full")
     public DscFullReportResponse getDscFullReport(
             @RequestParam String distCode,
@@ -100,123 +110,140 @@ public class ReportRestController {
         return reportService.getDscFullReport(distCode, itiCode, tradeCode, phase, year, modeAdm);
     }
 
+    // ========== 4a - DSC Options ==========
+    @Operation(summary = "4a - DSC Options")
+    @GetMapping("/dsc-options")
+    public DscOptionsResponse getDscOptions(
+            @RequestParam(required = false, name = "dist_code") String distCode,
+            @RequestParam(required = false, name = "iti_code") String itiCode) {
+        return reportService.getDscOptions(distCode, itiCode);
+    }
+
     // ========== 5 - Caste Wise Admissions Abstract ==========
-    @Operation(summary = "5 - Caste Wise Admissions Abstract", operationId = "05-caste-wise-admissions")
+    @Operation(summary = "5 - Caste Wise Admissions Abstract")
     @GetMapping("/caste-wise-admissions")
-    public List<CasteWiseAdmissionsResponse> getCasteWiseAdmissions(
+    public ApiListResponse<CasteWiseAdmissionsResponse> getCasteWiseAdmissions(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode,
             @RequestParam(required = false, defaultValue = "All") String govt,
             @RequestParam(required = false, defaultValue = "All") String phase,
             @RequestParam(required = false, defaultValue = "All") String gender) {
-        return reportService.getCasteWiseAdmissions(year, distCode, govt, phase, gender);
+        return new ApiListResponse<>(reportService.getCasteWiseAdmissions(year, distCode, govt, phase, gender));
+    }
+
+    @GetMapping("/applicant-count-district-wise")
+    public ApiListResponse<ApplicantCountDistrictResponse> getApplicantCountDistrictWise(
+            @RequestParam String year,
+            @RequestParam(required = false, defaultValue = "All") String distCode,
+            @RequestParam(required = false, defaultValue = "All") String govt,
+            @RequestParam(required = false, defaultValue = "All") String phase) {
+        return new ApiListResponse<>(reportService.getApplicantCountDistrictWise(year, distCode, govt, phase));
     }
 
     // ========== 6 - Applicant Address With Mobile ==========
-    @Operation(summary = "6 - Applicant Address With Mobile", operationId = "06-applicant-mobile-address")
+    @Operation(summary = "6 - Applicant Address With Mobile")
     @GetMapping("/applicant-mobile-address")
-    public List<ApplicantMobileAddressResponse> getApplicantMobileAddress(
-            @RequestParam String year,
+    public ApiListResponse<ApplicantMobileAddressResponse> getApplicantMobileAddress(
+            @RequestParam(required = false) String year,
             @RequestParam(required = false, defaultValue = "All") String distCode,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getApplicantMobileAddress(year, distCode, page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getApplicantMobileAddress(year, distCode, page, safeSize));
     }
 
     // ========== 7 - API Dashboard (District) ==========
-    @Operation(summary = "7 - API Dashboard (District)", operationId = "07-api-dashboard")
+    @Operation(summary = "7 - API Dashboard (District)")
     @GetMapping("/api-dashboard")
-    public List<ApiDashboardResponse> getApiDashboard(
-            @RequestParam String year) {
-        return reportService.getApiDashboard(year);
+    public ApiListResponse<ApiDashboardResponse> getApiDashboard(
+            @RequestParam(required = false) String year,
+            @RequestParam(required = false, defaultValue = "All") String distCode) {
+        return new ApiListResponse<>(reportService.getApiDashboard(year, distCode));
     }
 
     // ========== 8 - Verification Report (District) ==========
-    @Operation(summary = "8 - Verification Report (District)", operationId = "08-verified-application-count")
+    @Operation(summary = "8 - Verification Report (District)")
     @GetMapping("/verified-application-count")
-    public List<VerifiedApplicationCountResponse> getVerifiedApplicationCount(
+    public VerifiedApplicationCountReportResponse getVerifiedApplicationCount(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode) {
         return reportService.getVerifiedApplicationCount(year, distCode);
     }
 
     // ========== 9 - State Dashboard ==========
-    @Operation(summary = "9 - State Dashboard", operationId = "09-state-dashboard")
+    @Operation(summary = "9 - State Dashboard")
     @GetMapping("/state-dashboard")
-    public List<StateDashboardResponse> getStateDashboard(
+    public ApiListResponse<StateDashboardResponse> getStateDashboard(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String govt) {
-        return reportService.getStateDashboard(year, govt);
+        return new ApiListResponse<>(reportService.getStateDashboard(year, govt));
     }
 
     // ========== 10 - Phase Wise Admissions Details ==========
-    @Operation(summary = "10 - Phase Wise Admissions Details", operationId = "10-phase-wise")
+    @Operation(summary = "10 - Phase Wise Admissions Details")
     @GetMapping("/phase-wise")
-    public List<PhaseWiseReportResponse> getPhaseWiseReport(
+    public ApiListResponse<PhaseWiseReportResponse> getPhaseWiseReport(
             @RequestParam String year) {
-        return reportService.getPhaseWiseReport(year);
+        return new ApiListResponse<>(reportService.getPhaseWiseReport(year));
     }
 
     // ========== 11 - Today Schedule ITIs ==========
-    @Operation(summary = "11 - Today Schedule ITIs", operationId = "11-today-schedule")
+    @Operation(summary = "11 - Today Schedule ITIs")
     @GetMapping("/today-schedule")
-    public List<TodayScheduleResponse> getTodaySchedule() {
-        return reportService.getTodaySchedule();
+    public ApiListResponse<TodayScheduleResponse> getTodaySchedule() {
+        return new ApiListResponse<>(reportService.getTodaySchedule());
     }
 
     // ========== 12 - Trade Wise Report ==========
-    @Operation(summary = "12 - Trade Wise Report", operationId = "12-trade-wise-report")
+    @Operation(summary = "12 - Trade Wise Report")
     @GetMapping("/trade-wise-report")
-    public List<TradeWiseReportResponse> getTradeWiseReport(
+    public ApiListResponse<TradeWiseReportResponse> getTradeWiseReport(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode,
             @RequestParam(required = false, defaultValue = "All") String itiType) {
-        return reportService.getTradeWiseReport(year, distCode, itiType);
+        return new ApiListResponse<>(reportService.getTradeWiseReport(year, distCode, itiType));
     }
 
     // ========== 13 - Applicant Report Dist Wise ==========
-    @Operation(summary = "13 - Applicant Report Dist Wise", operationId = "13-applicant-report-state-wise")
+    @Operation(summary = "13 - Applicant Report Dist Wise")
     @GetMapping("/applicant-report-state-wise")
-    public List<ApplicantReportResponse> getApplicantReportStateWise(
-            @RequestParam String phase,
-            @RequestParam(required = false) String year,
-            @RequestParam(required = false, defaultValue = "All") String itiCode,
+    public ApiListResponse<ApplicantCountDistrictResponse> getApplicantReportStateWise(
+            @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode,
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getApplicantReportByPhase(phase, year, itiCode, distCode, page, safeSize);
+            @RequestParam(required = false, defaultValue = "All") String govt,
+            @RequestParam(required = false, defaultValue = "All") String phase) {
+        return new ApiListResponse<>(reportService.getApplicantCountDistrictWise(year, distCode, govt, phase));
     }
 
     // ========== 14 - DIST/ITI/Trade Wise Seats Abstract ==========
-    @Operation(summary = "14 - DIST/ITI/Trade Wise Seats Abstract", operationId = "14-open-seats")
+    @Operation(summary = "14 - DIST/ITI/Trade Wise Seats Abstract")
     @GetMapping("/open-seats")
-    public List<OpenSeatsAbstractResponse> getOpenSeatsAbstract(
+    public ApiListResponse<OpenSeatsAbstractResponse> getOpenSeatsAbstract(
             @RequestParam String year) {
-        return reportService.getOpenSeatsAbstract(year);
+        return new ApiListResponse<>(reportService.getOpenSeatsAbstract(year));
     }
 
     // ========== 15 - Duration Wise Trade Seats Abstract ==========
-    @Operation(summary = "15 - Duration Wise Trade Seats Abstract", operationId = "15-trade-duration-seats")
+    @Operation(summary = "15 - Duration Wise Trade Seats Abstract")
     @GetMapping("/trade-duration-seats")
-    public List<TradeDurationSeatsResponse> getTradeDurationSeats(
+    public ApiListResponse<TradeDurationSeatsResponse> getTradeDurationSeats(
             @RequestParam String year,
             @RequestParam String durationMonths,
             @RequestParam String itiType) {
-        return reportService.getTradeDurationSeats(year, durationMonths, itiType);
+        return new ApiListResponse<>(reportService.getTradeDurationSeats(year, durationMonths, itiType));
     }
 
     // ========== 16 - Govt/Pvt District Wise Seats Abstract ==========
-    @Operation(summary = "16 - Govt/Pvt District Wise Seats Abstract", operationId = "16-govt-pvt-seats")
+    @Operation(summary = "16 - Govt/Pvt District Wise Seats Abstract")
     @GetMapping("/govt-pvt-seats")
-    public List<GovtPvtSeatsAbstractResponse> getGovtPvtSeatsAbstract(
-            @RequestParam String year) {
-        return reportService.getGovtPvtSeatsAbstract(year);
+    public ApiListResponse<GovtPvtSeatsAbstractResponse> getGovtPvtSeatsAbstract(
+            @RequestParam String year,
+            @RequestParam(required = false, defaultValue = "All") String govt) {
+        return new ApiListResponse<>(reportService.getGovtPvtSeatsAbstract(year, govt));
     }
 
     // ========== 17 - Student Reg Details ==========
-    @Operation(summary = "17 - Student Reg Details", operationId = "17-student-details")
+    @Operation(summary = "17 - Student Reg Details")
     @GetMapping("/student-details")
     public StudentCompleteDetailsResponse getStudentCompleteDetails(
             @RequestParam(required = false) String regid,
@@ -225,40 +252,41 @@ public class ReportRestController {
     }
 
     // ========== 18 - Verification Report (District) ==========
-    @Operation(summary = "18 - Verification Report (District)", operationId = "18-district-wise-application-count")
+    @Operation(summary = "18 - Verification Report (District)")
     @GetMapping("/district-wise-application-count")
-    public List<DistrictWiseApplicationCountResponse> getDistrictWiseApplicationCount(
+    public ApiListResponse<DistrictWiseApplicationCountResponse> getDistrictWiseApplicationCount(
             @RequestParam String year) {
-        return reportService.getDistrictWiseApplicationCount(year);
+        return new ApiListResponse<>(reportService.getDistrictWiseApplicationCount(year));
     }
 
     // ========== 19 - District Schedule ==========
-    @Operation(summary = "19 - District Schedule", operationId = "19-district-schedule")
+    @Operation(summary = "19 - District Schedule")
     @GetMapping("/district-schedule")
-    public List<DistrictScheduleResponse> getDistrictSchedule(
+    public ApiListResponse<DistrictScheduleResponse> getDistrictSchedule(
             @RequestParam(required = false, defaultValue = "All") String distCode,
+            @RequestParam(required = false, defaultValue = "2025") String year,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getDistrictSchedule(distCode, page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getDistrictSchedule(distCode, year, page, safeSize));
     }
 
     // ========== 20 - Shift Unit Report ==========
-    @Operation(summary = "20 - Shift Unit Report", operationId = "20-permitted-shift-unit")
+    @Operation(summary = "20 - Shift Unit Report")
     @GetMapping("/permitted-shift-unit")
-    public List<ShiftUnitResponse> getPermittedShiftUnit(
+    public ApiListResponse<ShiftUnitResponse> getPermittedShiftUnit(
             @RequestParam String distCode,
             @RequestParam(required = false, defaultValue = "All") String itiCode,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getPermittedShiftUnit(distCode, itiCode, page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getPermittedShiftUnit(distCode, itiCode, page, safeSize));
     }
 
     // ========== 21 - Admitted Seats Abstract ==========
-    @Operation(summary = "21 - Admitted Seats Abstract", operationId = "21-iti-admissions")
+    @Operation(summary = "21 - Admitted Seats Abstract")
     @GetMapping("/iti-admissions")
-    public List<ITIAdmissionsReportResponse> getITIAdmissionsReport(
+    public ApiListResponse<ITIAdmissionsReportResponse> getITIAdmissionsReport(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode,
             @RequestParam(required = false, defaultValue = "All") String govt,
@@ -267,54 +295,64 @@ public class ReportRestController {
             @RequestParam(required = false, defaultValue = "All") String ncvtScvt,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getITIAdmissionsReport(year, distCode, govt, caste, gender, ncvtScvt, page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getITIAdmissionsReport(year, distCode, govt, caste, gender, ncvtScvt, page, safeSize));
     }
 
     // ========== 22 - All Resource Role ==========
-    @Operation(summary = "22 - All Resource Role", operationId = "22-all-resource-roles")
+    @Operation(summary = "22 - All Resource Role")
     @GetMapping("/all-resource-roles")
-    public List<AllResourceRoleResponse> getAllResourceRoles(
+    public ApiListResponse<AllResourceRoleResponse> getAllResourceRoles(
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "100") int size) {
-        int safeSize = Math.min(size, 500);
-        return reportService.getAllResourceRoles(page, safeSize);
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getAllResourceRoles(page, safeSize));
     }
 
     // ========== 23 - DistWise Admitted Seats Abstract ==========
-    @Operation(summary = "23 - DistWise Admitted Seats Abstract", operationId = "23-strength-filled-seats")
+    @Operation(summary = "23 - DistWise Admitted Seats Abstract")
     @GetMapping("/strength-filled-seats")
-    public List<StrengthFilledSeatsResponse> getStrengthFilledSeats(
+    public ApiListResponse<StrengthFilledSeatsResponse> getStrengthFilledSeats(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode) {
-        return reportService.getStrengthFilledSeatsAbstract(year, distCode);
+        return new ApiListResponse<>(reportService.getStrengthFilledSeatsAbstract(year, distCode));
     }
 
     // ========== 24 - Trade/Dist Wise Admission Report ==========
-    @Operation(summary = "24 - Trade/Dist Wise Admission Report", operationId = "24-admission-report")
+    @Operation(summary = "24 - Trade/Dist Wise Admission Report")
     @GetMapping("/admission-report")
-    public List<AdmissionReportResponse> getAdmissionReport(
+    public ApiListResponse<AdmissionReportResponse> getAdmissionReport(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String caste,
             @RequestParam(required = false, defaultValue = "All") String pwd) {
-        return reportService.getAdmissionReport(year, caste, pwd);
+        return new ApiListResponse<>(reportService.getAdmissionReport(year, caste, pwd));
     }
 
     // ========== 25 - TradeWise Vacant Position ==========
-    @Operation(summary = "25 - TradeWise Vacant Position", operationId = "25-trade-vacant-positions")
+    @Operation(summary = "25 - TradeWise Vacant Position")
     @GetMapping("/trade-vacant-positions")
-    public List<TradeWiseVacantResponse> getTradeWiseVacantPositions(
+    public ApiListResponse<TradeWiseVacantResponse> getTradeWiseVacantPositions(
             @RequestParam String year,
             @RequestParam(required = false, defaultValue = "All") String distCode) {
-        return reportService.getTradeWiseVacantPositions(year, distCode);
+        return new ApiListResponse<>(reportService.getTradeWiseVacantPositions(year, distCode));
     }
 
 
     // ========== TRADE DISPLAY ==========
-    @Operation(summary = "Trade Display - District Options", operationId = "26-trade-display-districts")
+    @Operation(summary = "Trade Display - District Options")
     @GetMapping("/trade-display/districts")
-    public List<DistrictOptionResponse> getDistrictOptions() {
-        return tradeDisplayReportService.getDistrictOptions();
+    public ApiListResponse<DistrictOptionResponse> getDistrictOptions() {
+        return new ApiListResponse<>(tradeDisplayReportService.getDistrictOptions());
     }
 
+    @Operation(summary = "Trade Display - ITI List with Trades & Strengths")
+    @GetMapping("/trade-display/itis")
+    public ApiListResponse<ItiTradeDisplayResponse> getTradeDisplayReport(
+            @RequestParam String dist,
+            @RequestParam(required = false) String type) {
+        TradeDisplayReportRequest request = new TradeDisplayReportRequest();
+        request.setDist(dist);
+        request.setType(type);
+        return new ApiListResponse<>(tradeDisplayReportService.getTradeDisplayReport(request));
+    }
 }

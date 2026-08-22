@@ -2,10 +2,12 @@ package com.server.backend.service.Reports;
 
 import java.util.List;
 
+import com.server.backend.DTO.Reports.AdmissionReportDetailResponse;
 import com.server.backend.DTO.Reports.AdmissionReportResponse;
 import com.server.backend.DTO.Reports.AllResourceRoleResponse;
 import com.server.backend.DTO.Reports.ApiDashboardResponse;
 import com.server.backend.DTO.Reports.ApplicantMobileAddressResponse;
+import com.server.backend.DTO.Reports.ApplicantCountDistrictResponse;
 import com.server.backend.DTO.Reports.ApplicantReportResponse;
 import com.server.backend.DTO.Reports.CasteWiseAdmissionsResponse;
 import com.server.backend.DTO.Reports.DistrictScheduleResponse;
@@ -25,6 +27,9 @@ import com.server.backend.DTO.Reports.TradeDurationSeatsResponse;
 import com.server.backend.DTO.Reports.TradeWiseReportResponse;
 import com.server.backend.DTO.Reports.TradeWiseVacantResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountResponse;
+import com.server.backend.DTO.Reports.VerifiedApplicationCountReportResponse;
+import com.server.backend.DTO.Reports.DscOptionsResponse;
+import com.server.backend.DTO.Reports.CurrentAdmissionPhaseResponse;
 
 public interface ReportService {
 
@@ -34,23 +39,32 @@ public interface ReportService {
     // 2. Applicant Report by Phase
     List<ApplicantReportResponse> getApplicantReportByPhase(String phase, String year, String itiCode, String distCode, int page, int size);
 
-    // 3. Admission Report (Trade wise)
+    // 3. Admission Report (Trade wise - for role 1 / state level)
     List<AdmissionReportResponse> getAdmissionReport(String year, String caste, String pwd);
+
+    // 3a. Admission Report (ITI - candidate detail for role 4)
+    List<AdmissionReportDetailResponse> getAdmissionReportDetails();
 
     // 4. DSC Full Report
     DscFullReportResponse getDscFullReport(String distCode, String itiCode, String tradeCode, String phase, String year, String modeAdm);
 
+    // 4a. DSC Options
+    DscOptionsResponse getDscOptions(String distCode, String itiCode);
+
     // 5. Caste Wise Admissions Abstract
     List<CasteWiseAdmissionsResponse> getCasteWiseAdmissions(String year, String distCode, String govt, String phase, String gender);
+
+    // 5a. Applicant Count District Wise (for old Caste Wise Admissions Abstract page)
+    List<ApplicantCountDistrictResponse> getApplicantCountDistrictWise(String year, String distCode, String govt, String phase);
 
     // 6. Applicant Address With Mobile
     List<ApplicantMobileAddressResponse> getApplicantMobileAddress(String year, String distCode, int page, int size);
 
-    // 7. API Dashboard (District)
-    List<ApiDashboardResponse> getApiDashboard(String year);
+    // 7. API Dashboard (District - ITI level)
+    List<ApiDashboardResponse> getApiDashboard(String year, String distCode);
 
     // 8. Verified Application Count
-    List<VerifiedApplicationCountResponse> getVerifiedApplicationCount(String year, String distCode);
+    VerifiedApplicationCountReportResponse getVerifiedApplicationCount(String year, String distCode);
 
     // 9. State Dashboard
     List<StateDashboardResponse> getStateDashboard(String year, String govt);
@@ -74,7 +88,7 @@ public interface ReportService {
     List<TradeDurationSeatsResponse> getTradeDurationSeats(String year, String durationMonths, String itiType);
 
     // 16. Govt/Pvt District Wise Seats Abstract
-    List<GovtPvtSeatsAbstractResponse> getGovtPvtSeatsAbstract(String year);
+    List<GovtPvtSeatsAbstractResponse> getGovtPvtSeatsAbstract(String year, String govt);
 
     // 17. Student Complete Details
     StudentCompleteDetailsResponse getStudentCompleteDetails(String regid, String admNum);
@@ -83,7 +97,7 @@ public interface ReportService {
     List<DistrictWiseApplicationCountResponse> getDistrictWiseApplicationCount(String year);
 
     // 19. District Schedule
-    List<DistrictScheduleResponse> getDistrictSchedule(String distCode, int page, int size);
+    List<DistrictScheduleResponse> getDistrictSchedule(String distCode, String year, int page, int size);
 
     // 20. Permitted Shift Unit Report
     List<ShiftUnitResponse> getPermittedShiftUnit(String distCode, String itiCode, int page, int size);
@@ -102,4 +116,7 @@ public interface ReportService {
 
     // 25. TradeWise Vacant Position
     List<TradeWiseVacantResponse> getTradeWiseVacantPositions(String year, String distCode);
+
+    // 26. Current Admission Phase
+    CurrentAdmissionPhaseResponse getCurrentAdmissionPhase();
 }
