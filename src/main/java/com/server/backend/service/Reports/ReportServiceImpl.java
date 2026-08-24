@@ -476,7 +476,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<ApplicantMobileAddressResponse> getApplicantMobileAddress(String year, String distCode, int page, int size) {
         StringBuilder sql = new StringBuilder("""
-            SELECT a.regid, a.name, a.fname, a.mname, a.phno, a.ssc_regno, a.address
+            SELECT a.regid, a.name, a.fname, a.mname, a.phno, a.ssc_regno, i.address
             FROM public.application a
             LEFT JOIN public.iti i ON a.user_id = i.iti_code
             LEFT JOIN public.dist_mst d ON i.dist_code = d.dist_code
