@@ -1,12 +1,10 @@
-package com.server.backend.controller;
+package com.server.backend.controller.Placements;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.server.backend.DTO.Placements.InplantDashboardResponse;
-import com.server.backend.DTO.Placements.LabsDashboardResponse;
 import com.server.backend.DTO.Placements.PlacementsDistinctItiResponse;
 import com.server.backend.DTO.Placements.PlacementsGroupedResponse;
 import com.server.backend.DTO.Placements.PlacementsOverviewResponse;
@@ -35,15 +33,5 @@ public class PlacementsController {
     @GetMapping("/getdDistinctItiCodesByPtype")
     public ResponseEntity<PlacementsDistinctItiResponse> getdDistinctItiCodesByPtype() {
         return ResponseEntity.ok(placementsService.getDistinctItiCodesByPtype());
-    }
-
-    @GetMapping("/inplantDashboardDetails")
-    public ResponseEntity<InplantDashboardResponse> inplantDashboardDetails() {
-        return ResponseEntity.ok(placementsService.getInplantDashboardDetails());
-    }
-
-    @GetMapping("/labsDashboardDetails")
-    public ResponseEntity<LabsDashboardResponse> labsDashboardDetails() {
-        return ResponseEntity.ok(placementsService.getLabsDashboardDetails());
     }
 }

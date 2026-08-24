@@ -1,4 +1,4 @@
-package com.server.backend.DTO.Placements;
+package com.server.backend.DTO.Labs;
 
 public class LabsDashboardResponse {
     private long labsTotal;

@@ -6,8 +6,6 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import com.server.backend.DTO.Placements.InplantDashboardResponse;
-import com.server.backend.DTO.Placements.LabsDashboardResponse;
 import com.server.backend.DTO.Placements.PlacementsDistinctItiResponse;
 import com.server.backend.DTO.Placements.PlacementsGroupedResponse;
 import com.server.backend.DTO.Placements.PlacementsOverviewResponse;
@@ -24,13 +22,9 @@ public class PlacementsServiceImpl implements PlacementsService {
     @Override
     public PlacementsOverviewResponse getOverviewDetails() {
         long placementsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM placements.placements", Long.class);
-        long implantCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM implant.implant", Long.class);
-        long labsCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM labs.labs", Long.class);
 
         PlacementsOverviewResponse response = new PlacementsOverviewResponse();
         response.setAllPlacement(placementsCount);
-        response.setAllImplants(implantCount);
-        response.setAllLabs(labsCount);
         return response;
     }
 
@@ -75,41 +69,6 @@ public class PlacementsServiceImpl implements PlacementsService {
                 case "selfemployment" -> response.setSelfEmploymentItisCount(count);
             }
         }
-        return response;
-    }
-
-    @Override
-    public InplantDashboardResponse getInplantDashboardDetails() {
-        InplantDashboardResponse response = new InplantDashboardResponse();
-
-        response.setInplantTotal(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM implant.implant", Long.class));
-        response.setInplantDistinctItis(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT iti_code) FROM implant.implant", Long.class));
-        response.setInplantDistinctSlnos(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT slno) FROM implant.implant", Long.class));
-
-        response.setIndustriesTotal(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM implant.industries", Long.class));
-        response.setIndustriesDistinctItis(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT iti_code) FROM implant.industries", Long.class));
-        response.setIndustriesDistinctIndustries(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT industry_id) FROM implant.industries", Long.class));
-        response.setIndustriesDistinctTrades(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT trade_code) FROM implant.industries", Long.class));
-
-        response.setIndustryMasterTotal(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM implant.industry_master", Long.class));
-        response.setIndustryMasterMajor(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM implant.industry_master WHERE industry_type = 'Major'", Long.class));
-        response.setIndustryMasterMinor(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM implant.industry_master WHERE industry_type = 'Minor'", Long.class));
-
-        response.setSumOfStudent(jdbcTemplate.queryForObject("SELECT COALESCE(SUM(no_of_students), 0) FROM implant.implant", Long.class));
-
-        return response;
-    }
-
-    @Override
-    public LabsDashboardResponse getLabsDashboardDetails() {
-        LabsDashboardResponse response = new LabsDashboardResponse();
-
-        response.setLabsTotal(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM labs.labs", Long.class));
-        response.setLabsDistinctItis(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT iti_code) FROM labs.labs", Long.class));
-        response.setLabsDistinctTrades(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT trade_short) FROM labs.labs", Long.class));
-        response.setLabItemsTotal(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM labs.labitems", Long.class));
-        response.setLabItemsDistinctItems(jdbcTemplate.queryForObject("SELECT COUNT(DISTINCT item_name) FROM labs.labitems", Long.class));
-
         return response;
     }
 }

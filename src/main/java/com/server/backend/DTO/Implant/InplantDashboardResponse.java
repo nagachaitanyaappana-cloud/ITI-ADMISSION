@@ -1,4 +1,4 @@
-package com.server.backend.DTO.Placements;
+package com.server.backend.DTO.Implant;
 
 public class InplantDashboardResponse {
     private long inplantTotal;
