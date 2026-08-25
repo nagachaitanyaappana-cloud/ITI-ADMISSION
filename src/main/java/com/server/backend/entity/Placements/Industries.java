@@ -1,4 +1,4 @@
-package com.server.backend.entity;
+package com.server.backend.entity.Placements;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -14,9 +14,9 @@ public class Industries {
     @Column(name="slno")
     private BigInteger slno;
 
-    @Column(name="dist_code")
+     @Column(name="dist_code")
      private Integer distCode;
-
+     
      @Column(name="dist_name")
      private String distName;
 

@@ -1,4 +1,4 @@
-package com.server.backend.entity;
+package com.server.backend.entity.Placements;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
