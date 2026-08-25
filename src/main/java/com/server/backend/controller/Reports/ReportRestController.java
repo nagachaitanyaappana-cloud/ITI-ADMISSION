@@ -93,8 +93,11 @@ public class ReportRestController {
     // ========== 3 - Admission Report (ITI) ==========
     @Operation(summary = "3 - Admission Report (ITI)")
     @GetMapping("/admission-report-iti")
-    public ApiListResponse<AdmissionReportDetailResponse> getAdmissionReportIti() {
-        return new ApiListResponse<>(reportService.getAdmissionReportDetails());
+    public ApiListResponse<AdmissionReportDetailResponse> getAdmissionReportIti(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "500") int size) {
+        int safeSize = Math.min(size, 10000);
+        return new ApiListResponse<>(reportService.getAdmissionReportDetails(page, safeSize));
     }
 
     // ========== 4 - DSC List ==========

@@ -205,37 +205,10 @@ public class ReportServiceImpl implements ReportService {
 
     // 3a. Admission Report (ITI - candidate detail for role 4)
     @Override
-    public List<AdmissionReportDetailResponse> getAdmissionReportDetails() {
-        String sql = """
-            SELECT
-                adm_num,
-                ssc_regno,
-                name,
-                fname,
-                mname,
-                TO_CHAR(dob, 'DD-MM-YYYY') AS dob,
-                phno,
-                email_id,
-                shift,
-                unit,
-                CASE
-                    WHEN pwd_category = '1' THEN 'Blind'
-                    WHEN pwd_category = '2' THEN 'Deaf'
-                    WHEN pwd_category = '3' THEN 'Motor Disability'
-                    WHEN pwd_category = '4' THEN 'Mental Disability'
-                    ELSE 'NA'
-                END AS pwd_category,
-                CASE
-                    WHEN economic_weaker_section = true THEN 'YES'
-                    ELSE 'NO'
-                END AS economic_weaker_section,
-                CASE
-                    WHEN is_trainee_dual_mode = true THEN 'YES'
-                    ELSE 'NO'
-                END AS is_trainee_dual_mode
-            FROM admissions.iti_admissions
-            ORDER BY adm_num
-            """;
+    public List<AdmissionReportDetailResponse> getAdmissionReportDetails(int page, int size) {
+        int safeSize = Math.min(size, 10000);
+        int offset = page * safeSize;
+        String sql = "SELECT adm_num, ssc_regno, name, fname, mname, TO_CHAR(dob, 'DD-MM-YYYY') AS dob, phno, email_id, shift, unit, CASE WHEN pwd_category = '1' THEN 'Blind' WHEN pwd_category = '2' THEN 'Deaf' WHEN pwd_category = '3' THEN 'Motor Disability' WHEN pwd_category = '4' THEN 'Mental Disability' ELSE 'NA' END AS pwd_category, CASE WHEN economic_weaker_section = true THEN 'YES' ELSE 'NO' END AS economic_weaker_section, CASE WHEN is_trainee_dual_mode = true THEN 'YES' ELSE 'NO' END AS is_trainee_dual_mode FROM admissions.iti_admissions ORDER BY adm_num LIMIT " + safeSize + " OFFSET " + offset;
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> new AdmissionReportDetailResponse(
                 rs.getString("adm_num"),
