@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.server.backend.DTO.Reports.DistrictOptionResponse;
+import com.server.backend.DTO.Reports.ItiListResponse;
 import com.server.backend.DTO.Reports.ItiTradeDisplayResponse;
 import com.server.backend.DTO.Reports.ItiTradeDisplayResponse.TradeDetail;
 import com.server.backend.DTO.Reports.TradeDisplayReportRequest;
@@ -67,6 +68,27 @@ public class TradeDisplayReportServiceImpl implements TradeDisplayReportService 
         }
 
         responseList.addAll(itiMap.values());
+        return responseList;
+    }
+
+    @Override
+    public List<ItiListResponse> getItiList(String govt) {
+        List<ItiListResponse> responseList = new ArrayList<>();
+
+        // Treat "A" (All) or empty value as "no filter" so every ITI is returned.
+        String effectiveGovt = (govt != null && !govt.isEmpty() && !govt.equalsIgnoreCase("A"))
+                ? govt : null;
+
+        List<Object[]> results = itiRepository.findItiListRows(effectiveGovt);
+
+        for (Object[] row : results) {
+            String districtName = (String) row[0];
+            String itiCode = (String) row[1];
+            String ncvtCode = (String) row[2];
+            String itiName = (String) row[3];
+            responseList.add(new ItiListResponse(districtName, itiCode, ncvtCode, itiName));
+        }
+
         return responseList;
     }
 }
