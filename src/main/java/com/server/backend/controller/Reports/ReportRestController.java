@@ -33,6 +33,7 @@ import com.server.backend.DTO.Reports.TradeWiseReportResponse;
 import com.server.backend.DTO.Reports.TradeWiseVacantResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountReportResponse;
+import com.server.backend.DTO.Reports.ItiListResponse;
 import com.server.backend.DTO.Reports.ItiTradeDisplayResponse;
 import com.server.backend.DTO.Reports.DscOptionsResponse;
 import com.server.backend.DTO.Reports.CurrentAdmissionPhaseResponse;
@@ -357,5 +358,12 @@ public class ReportRestController {
         request.setDist(dist);
         request.setType(type);
         return new ApiListResponse<>(tradeDisplayReportService.getTradeDisplayReport(request));
+    }
+
+    @Operation(summary = "ITI List - All ITIs filtered by type")
+    @GetMapping("/trade-display/iti-list")
+    public ApiListResponse<ItiListResponse> getItiList(
+            @RequestParam(required = false) String type) {
+        return new ApiListResponse<>(tradeDisplayReportService.getItiList(type));
     }
 }

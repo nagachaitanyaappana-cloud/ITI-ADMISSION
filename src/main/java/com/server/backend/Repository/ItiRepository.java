@@ -27,5 +27,12 @@ public interface ItiRepository extends JpaRepository<Iti, String> {
                    "WHERE i.dist_code = :distCode", nativeQuery = true)
     List<Object[]> findTradeDisplayRowsByDistrictCode(@Param("distCode") String distCode);
 
+    @Query(value = "SELECT d.dist_name, i.iti_code, i.ncvt_code, i.iti_name " +
+                   "FROM iti i " +
+                   "LEFT JOIN dist_mst d ON i.dist_code = d.dist_code " +
+                   "WHERE (:govt IS NULL OR i.govt = :govt) " +
+                   "ORDER BY d.dist_name, i.iti_name", nativeQuery = true)
+    List<Object[]> findItiListRows(@Param("govt") String govt);
+
     Optional<Iti> findByItiCodeAndDistCode(String itiCode, String distCode);
 }
