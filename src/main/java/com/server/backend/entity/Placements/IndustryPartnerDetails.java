@@ -5,10 +5,12 @@ import jakarta.persistence.Column;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import lombok.Data;
+import jakarta.persistence.Id;
 @Entity
 @Table(name="industry_partner_details")
 @Data
 public class IndustryPartnerDetails {
+    @Id
     @Column(name="pid")
     private BigInteger pid;
 
