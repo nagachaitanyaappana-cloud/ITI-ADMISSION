@@ -1,4 +1,4 @@
-package com.server.backend.Repository.placementsRepositories;
+package com.server.backend.Repository.PlacementsRepositories;
 
 public class IndustryMasterRepository {
     
