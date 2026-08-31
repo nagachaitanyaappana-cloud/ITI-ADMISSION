@@ -12,4 +12,6 @@ public interface ImplantService {
     List<ImplantResponse> getAllImplants();
 
     ImplantResponse getImplantById(Long implantId);
+    ImplantResponse updateImplant(Long implantId, ImplantCreateRequest request);
+    void deleteImplant(Long implantId);
 }

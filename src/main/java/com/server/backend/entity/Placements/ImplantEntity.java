@@ -1,7 +1,10 @@
 package com.server.backend.entity.Placements;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +15,12 @@ public class ImplantEntity{
     
     
 @Id
+@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "implant_id_seq")
+@SequenceGenerator(
+    name = "implant_id_seq",
+    sequenceName = "implant.implant_implant_id_seq",
+    allocationSize = 1
+)
 @Column(name = "implant_id", nullable = false)
 private Long implantId;
 

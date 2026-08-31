@@ -2,17 +2,16 @@ package com.server.backend.entity.Placements;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import lombok.Data;
 import jakarta.persistence.Id;
 @Entity
-@Table(name="industry_partner_details")
+@Table(name="industry_partner_details" ,schema="implant")
 @Data
 public class IndustryPartnerDetails {
     @Id
     @Column(name="pid")
-    private BigInteger pid;
+    private Long pid;
 
     @Column(name="dist_code")
     private String distCode;
