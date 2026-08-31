@@ -71,7 +71,7 @@ public class ImplantController {
         return ResponseEntity.ok(response);
     }
 
-
+   // Get a specific implant record by its ID
     @GetMapping("/{implantId}")
     public ResponseEntity<ImplantResponse> getImplantById(
             @PathVariable Long implantId) {
@@ -81,6 +81,7 @@ public class ImplantController {
 
         return ResponseEntity.ok(response);
     }
+    // Update an existing implant record by its ID
     @PutMapping("/{implantId}")
 public ResponseEntity<ImplantResponse> updateImplant(
         @PathVariable Long implantId,
@@ -90,7 +91,8 @@ public ResponseEntity<ImplantResponse> updateImplant(
             implantService.updateImplant(implantId, request);
 
     return ResponseEntity.ok(response);
-}
+}    
+    // Delete an implant record by its ID
     @DeleteMapping("/{implantId}")
     public ResponseEntity<Void> deleteImplant(
         @PathVariable Long implantId) {
@@ -99,13 +101,13 @@ public ResponseEntity<ImplantResponse> updateImplant(
 
     return ResponseEntity.noContent().build();
 }
-
+    //district login chesina user ki iti code dorikithe, iti code tho industries dorikithe, industries tho trades dorikithe, trades tho report dorikithe, report ni return cheyali
     @GetMapping("/itis")
 public ResponseEntity<List<Object[]>> getItis() {
     return ResponseEntity.ok(
             implantService.getItis());
 }
-
+ 
 @GetMapping("/industries")
 public ResponseEntity<List<Object[]>> getIndustries(
         @RequestParam Integer itiCode) {
@@ -113,7 +115,7 @@ public ResponseEntity<List<Object[]>> getIndustries(
     return ResponseEntity.ok(
             implantService.getIndustries(itiCode));
 }
-
+//report endpoint to fetch the report based on itiCode
     @GetMapping("/report")
 public ResponseEntity<List<ImplantResponse>> getReport(
         @RequestParam String itiCode) {

@@ -2,8 +2,8 @@ package com.server.backend.service.Implant;
 
 import com.server.backend.DTO.Implant.IndustryDropdownResponse;
 import com.server.backend.DTO.Implant.TradeResponse;
+import com.server.backend.Repository.placementsRepositories.IndustriesRepository;
 import com.server.backend.entity.Placements.Industries;
-import com.server.backend.Repository.PlacementsRepositories.IndustriesRepository;
 
 import org.springframework.stereotype.Service;
 
