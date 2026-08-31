@@ -6,21 +6,16 @@ import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.entity.Placements.ImplantEntity;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
-<<<<<<< HEAD
-import com.server.backend.Repository.placementsRepositories.IndustriesRepository;
-import com.server.backend.Repository.placementsRepositories.ImplantRepository;
-=======
 import com.server.backend.Repository.PlacementsRepositories.ImplantRepository;
 import com.server.backend.Repository.PlacementsRepositories.IndustriesRepository;
->>>>>>> c493c16441e5064f9635645226130e2756b11e2b
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
 public class ImplantServiceImpl implements ImplantService {
 
     private final JdbcTemplate jdbcTemplate;
-    private final ImplantRepository implantRepository;
-    private final IndustriesRepository industriesRepository;
+    privat    private final ImplantRepository implantRepository;
+e final IndustriesRepository industriesRepository;
     public ImplantServiceImpl(JdbcTemplate jdbcTemplate, ImplantRepository implantRepository, IndustriesRepository industriesRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.implantRepository = implantRepository;
