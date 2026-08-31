@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
@@ -77,4 +78,26 @@ public class ImplantController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/itis")
+public ResponseEntity<List<Object[]>> getItis() {
+    return ResponseEntity.ok(
+            implantService.getItis());
+}
+
+@GetMapping("/industries")
+public ResponseEntity<List<Object[]>> getIndustries(
+        @RequestParam Integer itiCode) {
+
+    return ResponseEntity.ok(
+            implantService.getIndustries(itiCode));
+}
+
+    @GetMapping("/report")
+public ResponseEntity<List<ImplantResponse>> getReport(
+        @RequestParam String itiCode) {
+
+    return ResponseEntity.ok(
+            implantService.getReport(itiCode)
+    );
+}
 }

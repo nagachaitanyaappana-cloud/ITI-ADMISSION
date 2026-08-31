@@ -4,7 +4,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import jakarta.persistence.Column;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 @Entity
 @Table(name="industries" ,schema="placements")
@@ -12,7 +11,7 @@ import java.sql.Timestamp;
 public class Industries {
     @Id
     @Column(name="slno")
-    private BigInteger slno;
+    private Long slno;
 
      @Column(name="dist_code")
      private Integer distCode;
@@ -21,7 +20,7 @@ public class Industries {
      private String distName;
 
      @Column(name="industry_id")
-     private BigInteger industryId;
+     private Long industryId;
 
      @Column(name="industry_name")
      private String industryName;
