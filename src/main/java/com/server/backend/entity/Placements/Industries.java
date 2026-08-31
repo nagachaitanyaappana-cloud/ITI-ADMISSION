@@ -4,6 +4,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import jakarta.persistence.Column;
+<<<<<<< HEAD
+
+=======
+>>>>>>> ed78cae23499ee652f4fe43f1a3c84a98148736f
 import java.sql.Timestamp;
 @Entity
 @Table(name="industries" ,schema="implant")
