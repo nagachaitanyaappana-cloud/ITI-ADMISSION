@@ -4,13 +4,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.entity.Placements.ImplantEntity;
-<<<<<<< HEAD
-=======
-import com.server.backend.Repository.placementsRepositories.ImplantRepository;
->>>>>>> ed78cae23499ee652f4fe43f1a3c84a98148736f
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
 import com.server.backend.Repository.placementsRepositories.IndustriesRepository;
+import com.server.backend.Repository.placementsRepositories.ImplantRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 @Service

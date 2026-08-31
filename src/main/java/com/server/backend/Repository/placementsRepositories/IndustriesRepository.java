@@ -1,4 +1,4 @@
-package com.server.backend.Repository.PlacementsRepositories;
+package com.server.backend.Repository.placementsRepositories;
 import com.server.backend.entity.Placements.Industries;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
