@@ -4,6 +4,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.entity.Placements.ImplantEntity;
+<<<<<<< HEAD
+=======
+import com.server.backend.Repository.PlacementsRepositories.ImplantRepository;
+>>>>>>> 041781efa9b809cf15507b8c64a7bdc32ee6bee9
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
 import com.server.backend.Repository.placementsRepositories.ImplantRepository;
@@ -89,6 +93,43 @@ public ImplantResponse createImplant(ImplantCreateRequest request) {
 
         return mapToImplantResponse(implant);
     }
+@Override
+    public ImplantResponse updateImplant(Long implantId, ImplantCreateRequest request) {
+
+    ImplantEntity implant = implantRepository.findById(implantId)
+            .orElseThrow(() ->
+                    new RuntimeException("In-Plant record not found with ID: " + implantId)
+            );
+
+    implant.setDescription(request.getDescription());
+    implant.setDistCode(request.getDistcode());
+    implant.setFacultyName(request.getFacultyName());
+    implant.setFromDate(request.getFromDate());
+    implant.setHrNo(request.getHrNo());
+    implant.setIndustryAddress(request.getIndustryAddress());
+    implant.setItiCode(request.getItiCode());
+    implant.setLocation(request.getLocation());
+    implant.setNoOfDays(request.getNoOfDays());
+    implant.setNoOfStudents(request.getNoOfStudents());
+    implant.setToDate(request.getToDate());
+    implant.setTradeShort(request.getTradeShort());
+    implant.setEntryBy(request.getEntryBy());
+
+    
+    ImplantEntity updatedImplant = implantRepository.save(implant);
+
+    return mapToImplantResponse(updatedImplant);
+}
+ @Override
+public void deleteImplant(Long implantId) {
+
+    ImplantEntity implant = implantRepository.findById(implantId)
+            .orElseThrow(() ->
+                    new RuntimeException("In-Plant record not found with ID: " + implantId)
+            );
+
+    implantRepository.delete(implant);
+}
 
    private ImplantResponse mapToImplantResponse(ImplantEntity implant) {
 

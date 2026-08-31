@@ -4,9 +4,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import jakarta.persistence.Column;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 041781efa9b809cf15507b8c64a7bdc32ee6bee9
 import java.sql.Timestamp;
 @Entity
-@Table(name="industries" ,schema="placements")
+@Table(name="industries" ,schema="implant")
 @Data
 public class Industries {
     @Id
@@ -38,7 +42,7 @@ public class Industries {
      private String ncvtMisCode;
 
      @Column(name="no_of_trades")
-     private Integer noOfTrades;
+     private String noOfTrades;
 
      @Column(name="no_of_units")
      private String noOfUnits;

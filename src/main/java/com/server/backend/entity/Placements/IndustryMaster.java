@@ -4,15 +4,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 import jakarta.persistence.Column;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 @Entity
-@Table(name="industry_master" ,schema="placements")
+@Table(name="industry_master" ,schema="implant")
 @Data
 public class IndustryMaster {
     @Id
     @Column(name="industry_id")
-    private BigInteger industryId;
+    private Long industryId;
 
     @Column(name="industry_address")
     private String industryAddress;

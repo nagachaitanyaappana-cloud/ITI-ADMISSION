@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +18,9 @@ import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
 import com.server.backend.service.Implant.ImplantService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "Implant", description = "Implant management APIs")
 @RestController
 @RequestMapping("/api/implant")
 public class ImplantController {
@@ -77,6 +81,24 @@ public class ImplantController {
 
         return ResponseEntity.ok(response);
     }
+    @PutMapping("/{implantId}")
+public ResponseEntity<ImplantResponse> updateImplant(
+        @PathVariable Long implantId,
+        @RequestBody ImplantCreateRequest request) {
+
+    ImplantResponse response =
+            implantService.updateImplant(implantId, request);
+
+    return ResponseEntity.ok(response);
+}
+    @DeleteMapping("/{implantId}")
+    public ResponseEntity<Void> deleteImplant(
+        @PathVariable Long implantId) {
+
+    implantService.deleteImplant(implantId);
+
+    return ResponseEntity.noContent().build();
+}
 
     @GetMapping("/itis")
 public ResponseEntity<List<Object[]>> getItis() {

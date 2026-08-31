@@ -12,7 +12,12 @@ public interface ImplantService {
     List<ImplantResponse> getAllImplants();
 
     ImplantResponse getImplantById(Long implantId);
+<<<<<<< HEAD
     List<Object[]> getItis();
     List<Object[]> getIndustries(Integer itiCode);
     List<ImplantResponse> getReport(String itiCode);
+=======
+    ImplantResponse updateImplant(Long implantId, ImplantCreateRequest request);
+    void deleteImplant(Long implantId);
+>>>>>>> 041781efa9b809cf15507b8c64a7bdc32ee6bee9
 }
