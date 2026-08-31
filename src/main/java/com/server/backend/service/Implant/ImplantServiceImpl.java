@@ -4,9 +4,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.entity.Placements.ImplantEntity;
+<<<<<<< HEAD
+=======
 import com.server.backend.Repository.PlacementsRepositories.ImplantRepository;
+>>>>>>> 041781efa9b809cf15507b8c64a7bdc32ee6bee9
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
+import com.server.backend.Repository.placementsRepositories.ImplantRepository;
+import com.server.backend.Repository.placementsRepositories.IndustriesRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
@@ -14,10 +19,11 @@ public class ImplantServiceImpl implements ImplantService {
 
     private final JdbcTemplate jdbcTemplate;
     private final ImplantRepository implantRepository;
-
-    public ImplantServiceImpl(JdbcTemplate jdbcTemplate, ImplantRepository implantRepository) {
+    private final IndustriesRepository industriesRepository;
+    public ImplantServiceImpl(JdbcTemplate jdbcTemplate, ImplantRepository implantRepository, IndustriesRepository industriesRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.implantRepository = implantRepository;
+        this.industriesRepository = industriesRepository;
     }
 
     @Override
@@ -148,6 +154,20 @@ public void deleteImplant(Long implantId) {
 
     return response;
 }
+ @Override
+    public List<Object[]> getItis() {
+        return industriesRepository.getItis();
+    }
+
+    @Override
+    public List<Object[]> getIndustries(Integer itiCode) {
+        return industriesRepository.getIndustries(itiCode);
+    }
+    
+      @Override
+    public List<ImplantResponse> getReport(String itiCode) {
+        return implantRepository.findByItiCode(itiCode).stream().map(this::mapToImplantResponse).toList();
+    }
 }
 
 
