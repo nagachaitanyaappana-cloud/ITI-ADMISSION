@@ -1,4 +1,4 @@
-package com.server.backend.Repository.placementsRepositories;
+package com.server.backend.Repository.PlacementsRepositories;
 import com.server.backend.entity.Placements.Industries;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +22,12 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
         ORDER BY industry_name
         """, nativeQuery = true)
     List<Object[]> getIndustries(@Param("itiCode") Integer itiCode);
+    @Query("""
+    SELECT DISTINCT i
+    FROM Industries i
+    WHERE i.itiCode = :itiCode
+    ORDER BY i.industryName
+""")
+List<Industries> findDistinctIndustriesByItiCode(
+        @Param("itiCode") Integer itiCode);
 }
