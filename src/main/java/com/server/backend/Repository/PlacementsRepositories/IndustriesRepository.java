@@ -22,4 +22,12 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
         ORDER BY industry_name
         """, nativeQuery = true)
     List<Object[]> getIndustries(@Param("itiCode") Integer itiCode);
+    @Query("""
+    SELECT DISTINCT i
+    FROM Industries i
+    WHERE i.itiCode = :itiCode
+    ORDER BY i.industryName
+""")
+List<Industries> findDistinctIndustriesByItiCode(
+        @Param("itiCode") Integer itiCode);
 }
