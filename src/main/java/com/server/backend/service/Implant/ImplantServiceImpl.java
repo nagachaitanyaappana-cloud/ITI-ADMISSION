@@ -14,8 +14,8 @@ import java.util.List;
 public class ImplantServiceImpl implements ImplantService {
 
     private final JdbcTemplate jdbcTemplate;
-    privat    private final ImplantRepository implantRepository;
-e final IndustriesRepository industriesRepository;
+    private final ImplantRepository implantRepository;
+    private  final IndustriesRepository industriesRepository;
     public ImplantServiceImpl(JdbcTemplate jdbcTemplate, ImplantRepository implantRepository, IndustriesRepository industriesRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.implantRepository = implantRepository;

@@ -4,9 +4,7 @@ import com.server.backend.DTO.Implant.IndustryDropdownResponse;
 import com.server.backend.DTO.Implant.TradeResponse;
 import com.server.backend.Repository.PlacementsRepositories.IndustriesRepository;
 import com.server.backend.entity.Placements.Industries;
-
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
