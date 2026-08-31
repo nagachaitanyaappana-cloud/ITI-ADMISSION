@@ -6,8 +6,13 @@ import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.entity.Placements.ImplantEntity;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
+<<<<<<< HEAD
 import com.server.backend.Repository.placementsRepositories.IndustriesRepository;
 import com.server.backend.Repository.placementsRepositories.ImplantRepository;
+=======
+import com.server.backend.Repository.PlacementsRepositories.ImplantRepository;
+import com.server.backend.Repository.PlacementsRepositories.IndustriesRepository;
+>>>>>>> c493c16441e5064f9635645226130e2756b11e2b
 import java.time.LocalDateTime;
 import java.util.List;
 @Service
@@ -161,7 +166,7 @@ public void deleteImplant(Long implantId) {
     }
     
       @Override
-    public List<ImplantResponse> getReport(String itiCode) {
+    public List<ImplantResponse> getReport(Integer itiCode) {
         return implantRepository.findByItiCode(itiCode).stream().map(this::mapToImplantResponse).toList();
     }
 }
