@@ -118,7 +118,7 @@ public ResponseEntity<List<Object[]>> getIndustries(
 //report endpoint to fetch the report based on itiCode
     @GetMapping("/report")
 public ResponseEntity<List<ImplantResponse>> getReport(
-        @RequestParam String itiCode) {
+        @RequestParam Integer itiCode) {
 
     return ResponseEntity.ok(
             implantService.getReport(itiCode)
