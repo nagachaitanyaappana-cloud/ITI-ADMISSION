@@ -1547,31 +1547,95 @@ public class ReportServiceImpl implements ReportService {
     }
 
     // 27. Students Not Admitted
-    // Registered students (public.application) who have no admission record in
+    // Registered students who have no admission record in
     // admissions.iti_admissions for the given year. Optional phase filter.
-    private static final String NOT_ADMITTED_BASE_SQL = """
-        FROM public.student_application s
-        WHERE s.year = ?
-          AND NOT EXISTS (
-              SELECT 1
-              FROM admissions.iti_admissions a
-              WHERE a.regid = s.regid::text
-          )
-        """;
+    // Reads public.student_application first; if it has no rows for the year,
+    // falls back to the year-partitioned table public.student_application<year>
+    // (e.g. student_application2025), whose phase column is an hstore.
+    private static final String NOT_ADMITTED_SELECT = """
+            SELECT s.regid, s.name, s.fname, s.gender, s.caste, s.sub_caste,
+                   s.dob, s.phno, s.adarno, s.email, s.year, %s,
+                   s.app_status, s.entry_date, s.verified_date
+            FROM %s s
+            WHERE s.year = ?
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM admissions.iti_admissions a
+                  WHERE a.regid = s.regid::text
+              )
+            """;
+    private static final String NOT_ADMITTED_COUNT = """
+            SELECT COUNT(*)
+            FROM %s s
+            WHERE s.year = ?
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM admissions.iti_admissions a
+                  WHERE a.regid = s.regid::text
+              )
+            """;
+    private static final String PHASE_PLAIN = "s.phase";
+    private static final String PHASE_HSTORE =
+            "COALESCE((SELECT k FROM unnest(akeys(s.phase)) k WHERE k <> '' LIMIT 1), '') AS phase";
+
+    // Returns the table to read: base table when it has rows for the year,
+    // otherwise the year-partitioned table if it exists. Year must be digits
+    // (validated) since the table name is interpolated, not bound.
+    private String resolveNotAdmittedTable(String year) {
+        String base = "public.student_application";
+        if (year == null || !year.matches("\\d{1,4}")) return base;
+        Long cnt = jdbcTemplate.query(
+                "SELECT COUNT(*) FROM public.student_application WHERE year = ?",
+                rs -> rs.next() ? rs.getLong(1) : 0L, year);
+        if (cnt != null && cnt > 0) return base;
+        Object reg = jdbcTemplate.queryForObject(
+                "SELECT to_regclass(?)", Object.class, "public.student_application" + year);
+        return reg != null ? "public.student_application" + year : base;
+    }
+
+    private boolean isFallbackTable(String table) {
+        return !table.equals("public.student_application");
+    }
+
+    private void appendPhaseFilter(StringBuilder sql, List<Object> params, Integer phase, boolean hstorePhase) {
+        if (phase != null && phase > 0) {
+            if (hstorePhase) {
+                sql.append(" AND exist(s.phase, ?)");
+            } else {
+                sql.append(" AND s.phase = ?");
+            }
+            params.add(String.valueOf(phase));
+        }
+    }
+
+    @Override
+    public List<String> getStudentsNotAdmittedYears() {
+        // Years available: distinct years in the base table plus any
+        // year-partitioned tables (student_application<year>) that exist.
+        String sql = """
+            SELECT DISTINCT yr FROM (
+                SELECT year AS yr FROM public.student_application WHERE year IS NOT NULL AND year <> ''
+                UNION
+                SELECT regexp_replace(table_name, '^student_application', '')
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND table_name ~ '^student_application[0-9]{4}$'
+            ) t
+            WHERE yr ~ '^[0-9]{4}$'
+            ORDER BY yr DESC
+            """;
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
 
     @Override
     public List<NotAdmittedStudentResponse> getStudentsNotAdmitted(String year, Integer phase, int page, int size) {
-        StringBuilder sql = new StringBuilder("""
-            SELECT s.regid, s.name, s.fname, s.gender, s.caste, s.sub_caste,
-                   s.dob, s.phno, s.adarno, s.email, s.year, s.phase,
-                   s.app_status, s.entry_date, s.verified_date
-            """ + NOT_ADMITTED_BASE_SQL);
+        String table = resolveNotAdmittedTable(year);
+        boolean hstorePhase = isFallbackTable(table);
+        StringBuilder sql = new StringBuilder(String.format(NOT_ADMITTED_SELECT,
+                hstorePhase ? PHASE_HSTORE : PHASE_PLAIN, table));
         List<Object> params = new ArrayList<>();
         params.add(year);
-        if (phase != null && phase > 0) {
-            sql.append(" AND s.phase = ?");
-            params.add(String.valueOf(phase));
-        }
+        appendPhaseFilter(sql, params, phase, hstorePhase);
         sql.append(" ORDER BY s.regid LIMIT ? OFFSET ?");
         params.add(size);
         params.add((long) page * size);
@@ -1597,13 +1661,12 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public long countStudentsNotAdmitted(String year, Integer phase) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) " + NOT_ADMITTED_BASE_SQL);
+        String table = resolveNotAdmittedTable(year);
+        boolean hstorePhase = isFallbackTable(table);
+        StringBuilder sql = new StringBuilder(String.format(NOT_ADMITTED_COUNT, table));
         List<Object> params = new ArrayList<>();
         params.add(year);
-        if (phase != null && phase > 0) {
-            sql.append(" AND s.phase = ?");
-            params.add(String.valueOf(phase));
-        }
+        appendPhaseFilter(sql, params, phase, hstorePhase);
         Long count = jdbcTemplate.query(sql.toString(), rs -> rs.next() ? rs.getLong(1) : 0L, params.toArray());
         return count != null ? count : 0;
     }

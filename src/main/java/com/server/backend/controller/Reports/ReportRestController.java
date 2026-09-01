@@ -371,6 +371,12 @@ public class ReportRestController {
     }
 
     // ========== 27 - Students Not Admitted ==========
+    @Operation(summary = "27 - Students Not Admitted - available years (base + partition tables)")
+    @GetMapping("/students-not-admitted/years")
+    public ApiListResponse<String> getStudentsNotAdmittedYears() {
+        return new ApiListResponse<>(reportService.getStudentsNotAdmittedYears());
+    }
+
     @Operation(summary = "27 - Students Not Admitted (registered but no admission record)")
     @GetMapping("/students-not-admitted")
     public ApiListResponse<NotAdmittedStudentResponse> getStudentsNotAdmitted(

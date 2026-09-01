@@ -122,6 +122,9 @@ public interface ReportService {
     CurrentAdmissionPhaseResponse getCurrentAdmissionPhase();
 
     // 27. Students Not Admitted
+    List<String> getStudentsNotAdmittedYears();
+
+    // 27. Students Not Admitted
     List<NotAdmittedStudentResponse> getStudentsNotAdmitted(String year, Integer phase, int page, int size);
 
     long countStudentsNotAdmitted(String year, Integer phase);
