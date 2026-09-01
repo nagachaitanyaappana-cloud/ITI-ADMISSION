@@ -11,9 +11,10 @@ import lombok.Data;
 @Data
 public class LoginUser {
 
+    /* Actual primary key of login_users is slno */
     @Id
-    @Column(name = "user_id", nullable = false, length = 50)
-    private String userId;
+    @Column(name = "slno", nullable = false)
+    private Integer slno;
 
     @Column(name = "username", length = 100)
     private String userName;
@@ -24,12 +25,23 @@ public class LoginUser {
     @Column(name = "ins_code", length = 4)
     private String distCode;
 
-    @Column(name = "iti_code", length = 4)
-    private String itiCode;
-
-    @Column(name = "mobile", length = 15)
+    @Column(name = "mobile_no", length = 15, insertable = false, updatable = false)
     private String mobile;
 
-    @Column(name = "email", length = 100)
+    @Column(name = "email_id", length = 100, insertable = false, updatable = false)
     private String email;
+
+    /* ---- read-only login columns (never written via JPA) ---- */
+
+    @Column(name = "password", insertable = false, updatable = false)
+    private String password;
+
+    @Column(name = "hash_password", insertable = false, updatable = false)
+    private String hashPassword;
+
+    @Column(name = "status", insertable = false, updatable = false)
+    private Boolean status;
+
+    @Column(name = "u_name", length = 100, insertable = false, updatable = false)
+    private String fullName;
 }

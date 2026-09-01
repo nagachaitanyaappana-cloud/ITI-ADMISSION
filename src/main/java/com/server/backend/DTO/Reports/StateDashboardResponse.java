@@ -5,9 +5,9 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ApiDashboardResponse {
-    private String itiName;
-    private String itiCode;
+public class StateDashboardResponse {
+    private String districtName;
+    private String distCode;
     private int total;
     private int success;
     private int pendingSid;
