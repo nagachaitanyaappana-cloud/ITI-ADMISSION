@@ -1,6 +1,9 @@
 package com.server.backend.entity.Placements;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import jakarta.persistence.Column;
@@ -9,10 +12,16 @@ import java.sql.Timestamp;
 @Table(name="industries" ,schema="implant")
 @Data
 public class Industries {
-    @Id
-    @Column(name="slno")
-    private Long slno;
-
+  @Id
+@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "industries_seq")
+@SequenceGenerator(
+    name = "industries_seq",
+    sequenceName = "industries_id_seq",
+    schema = "implant",
+    allocationSize = 1
+)
+@Column(name = "slno")
+private Long slno;
      @Column(name="dist_code")
      private Integer distCode;
      

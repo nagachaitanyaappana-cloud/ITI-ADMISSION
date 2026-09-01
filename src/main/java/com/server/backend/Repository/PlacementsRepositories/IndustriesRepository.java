@@ -22,5 +22,8 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
         """, nativeQuery = true)
     List<Object[]> getIndustries(@Param("itiCode") Integer itiCode);
       List<Industries> findByItiCode(Integer itiCode);
+      Boolean existsByItiCodeAndIndustryIdAndTradeCode(
+              Integer itiCode, Long industryId, Integer tradeCode
+      );
 
 }  
