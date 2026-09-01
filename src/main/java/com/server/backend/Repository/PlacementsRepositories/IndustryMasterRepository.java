@@ -4,12 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 public interface IndustryMasterRepository extends JpaRepository<IndustryMaster, Long> {
-<<<<<<< HEAD
     List<IndustryMaster> findByIndustryId(Long industryId);
     
-=======
-
-    // List<IndustryMaster> findByIndustryCode(String industryCode);
->>>>>>> c225e0782a24e467dae5b43d747883f09edc2d97
 }
 
