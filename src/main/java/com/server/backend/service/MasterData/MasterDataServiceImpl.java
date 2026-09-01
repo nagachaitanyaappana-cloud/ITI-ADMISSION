@@ -78,8 +78,8 @@ public class MasterDataServiceImpl implements MasterDataService {
         return y != null ? y : String.valueOf(java.time.Year.now().getValue());
     }
 
-    private int resolvePhase(int phase, String year) {
-        if (phase > 0) return phase;
+    private int resolvePhase(Integer phase, String year) {
+        if (phase != null && phase > 0) return phase;
         Integer p = jdbcTemplate.query(LATEST_PHASE_SQL, rs -> rs.next() ? rs.getInt(1) : null, year);
         return (p != null && p > 0) ? p : 1;
     }
