@@ -24,7 +24,7 @@ public class NotAdmittedStudentResponse {
     private String adarno;
     private String email;
     private String year;
-    private Integer phase;
+    private String phase;
     private String appStatus;
     private LocalDateTime entryDate;
     private LocalDateTime verifiedDate;

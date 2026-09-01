@@ -1551,7 +1551,7 @@ public class ReportServiceImpl implements ReportService {
     // admissions.iti_admissions for the given year. Optional phase filter.
     private static final String NOT_ADMITTED_BASE_SQL = """
         FROM public.application s
-        WHERE s.year::text = ?::text
+        WHERE s.year = ?
           AND NOT EXISTS (
               SELECT 1
               FROM admissions.iti_admissions a
@@ -1563,14 +1563,15 @@ public class ReportServiceImpl implements ReportService {
     public List<NotAdmittedStudentResponse> getStudentsNotAdmitted(String year, Integer phase, int page, int size) {
         StringBuilder sql = new StringBuilder("""
             SELECT s.regid, s.name, s.fname, s.gender, s.caste, s.sub_caste,
-                   s.dob, s.phno, s.adarno, s.email, s.year, s.phase,
+                   s.dob, s.phno, s.adarno, s.email, s.year,
+                   COALESCE((SELECT k FROM unnest(akeys(s.phase)) k WHERE k <> '' LIMIT 1), '') AS phase,
                    s.app_status, s.entry_date, s.verified_date
             """ + NOT_ADMITTED_BASE_SQL);
         List<Object> params = new ArrayList<>();
         params.add(year);
         if (phase != null && phase > 0) {
-            sql.append(" AND s.phase = ?");
-            params.add(phase);
+            sql.append(" AND exist(s.phase, ?)");
+            params.add(String.valueOf(phase));
         }
         sql.append(" ORDER BY s.regid LIMIT ? OFFSET ?");
         params.add(size);
@@ -1588,7 +1589,7 @@ public class ReportServiceImpl implements ReportService {
                 rs.getString("adarno"),
                 rs.getString("email"),
                 rs.getString("year"),
-                rs.getObject("phase") != null ? rs.getInt("phase") : null,
+                rs.getString("phase"),
                 rs.getString("app_status"),
                 rs.getTimestamp("entry_date") != null ? rs.getTimestamp("entry_date").toLocalDateTime() : null,
                 rs.getTimestamp("verified_date") != null ? rs.getTimestamp("verified_date").toLocalDateTime() : null
@@ -1601,8 +1602,8 @@ public class ReportServiceImpl implements ReportService {
         List<Object> params = new ArrayList<>();
         params.add(year);
         if (phase != null && phase > 0) {
-            sql.append(" AND s.phase = ?");
-            params.add(phase);
+            sql.append(" AND exist(s.phase, ?)");
+            params.add(String.valueOf(phase));
         }
         Long count = jdbcTemplate.query(sql.toString(), rs -> rs.next() ? rs.getLong(1) : 0L, params.toArray());
         return count != null ? count : 0;
