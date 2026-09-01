@@ -1,5 +1,7 @@
 package com.server.backend.controller.Reports;
 
+import java.util.List;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,6 +36,7 @@ import com.server.backend.DTO.Reports.TradeWiseVacantResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountReportResponse;
 import com.server.backend.DTO.Reports.ItiListResponse;
+import com.server.backend.DTO.Reports.NotAdmittedStudentResponse;
 import com.server.backend.DTO.Reports.ItiTradeDisplayResponse;
 import com.server.backend.DTO.Reports.DscOptionsResponse;
 import com.server.backend.DTO.Reports.CurrentAdmissionPhaseResponse;
@@ -365,5 +368,21 @@ public class ReportRestController {
     public ApiListResponse<ItiListResponse> getItiList(
             @RequestParam(required = false) String type) {
         return new ApiListResponse<>(tradeDisplayReportService.getItiList(type));
+    }
+
+    // ========== 27 - Students Not Admitted ==========
+    @Operation(summary = "27 - Students Not Admitted (registered but no admission record)")
+    @GetMapping("/students-not-admitted")
+    public ApiListResponse<NotAdmittedStudentResponse> getStudentsNotAdmitted(
+            @RequestParam String year,
+            @RequestParam(required = false) Integer phase,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "500") int size) {
+        int safeSize = Math.min(size, 5000);
+        List<NotAdmittedStudentResponse> rows =
+                reportService.getStudentsNotAdmitted(year, phase, page, safeSize);
+        ApiListResponse<NotAdmittedStudentResponse> response = new ApiListResponse<>(rows);
+        response.setCount((int) reportService.countStudentsNotAdmitted(year, phase));
+        return response;
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.server.backend.DTO.Reports.AdmissionReportDetailResponse;
+import com.server.backend.DTO.Reports.NotAdmittedStudentResponse;
 import com.server.backend.DTO.Reports.AdmissionReportResponse;
 import com.server.backend.DTO.Reports.AllResourceRoleResponse;
 import com.server.backend.DTO.Reports.ApiDashboardResponse;
@@ -1543,6 +1544,68 @@ public class ReportServiceImpl implements ReportService {
             new CurrentAdmissionPhaseResponse(rs.getString("year"), rs.getInt("phase"))
         );
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    // 27. Students Not Admitted
+    // Registered students (public.application) who have no admission record in
+    // admissions.iti_admissions for the given year. Optional phase filter.
+    private static final String NOT_ADMITTED_BASE_SQL = """
+        FROM public.application s
+        WHERE s.year::text = ?::text
+          AND NOT EXISTS (
+              SELECT 1
+              FROM admissions.iti_admissions a
+              WHERE a.regid = s.regid::text
+          )
+        """;
+
+    @Override
+    public List<NotAdmittedStudentResponse> getStudentsNotAdmitted(String year, Integer phase, int page, int size) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT s.regid, s.name, s.fname, s.gender, s.caste, s.sub_caste,
+                   s.dob, s.phno, s.adarno, s.email, s.year, s.phase,
+                   s.app_status, s.entry_date, s.verified_date
+            """ + NOT_ADMITTED_BASE_SQL);
+        List<Object> params = new ArrayList<>();
+        params.add(year);
+        if (phase != null && phase > 0) {
+            sql.append(" AND s.phase = ?");
+            params.add(phase);
+        }
+        sql.append(" ORDER BY s.regid LIMIT ? OFFSET ?");
+        params.add(size);
+        params.add((long) page * size);
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> new NotAdmittedStudentResponse(
+                rs.getLong("regid"),
+                rs.getString("name"),
+                rs.getString("fname"),
+                rs.getString("gender"),
+                rs.getString("caste"),
+                rs.getString("sub_caste"),
+                str(rs.getDate("dob")),
+                rs.getObject("phno") != null ? rs.getLong("phno") : null,
+                rs.getString("adarno"),
+                rs.getString("email"),
+                rs.getString("year"),
+                rs.getObject("phase") != null ? rs.getInt("phase") : null,
+                rs.getString("app_status"),
+                rs.getTimestamp("entry_date") != null ? rs.getTimestamp("entry_date").toLocalDateTime() : null,
+                rs.getTimestamp("verified_date") != null ? rs.getTimestamp("verified_date").toLocalDateTime() : null
+        ), params.toArray());
+    }
+
+    @Override
+    public long countStudentsNotAdmitted(String year, Integer phase) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) " + NOT_ADMITTED_BASE_SQL);
+        List<Object> params = new ArrayList<>();
+        params.add(year);
+        if (phase != null && phase > 0) {
+            sql.append(" AND s.phase = ?");
+            params.add(phase);
+        }
+        Long count = jdbcTemplate.query(sql.toString(), rs -> rs.next() ? rs.getLong(1) : 0L, params.toArray());
+        return count != null ? count : 0;
     }
 
     private String str(Object o) {
