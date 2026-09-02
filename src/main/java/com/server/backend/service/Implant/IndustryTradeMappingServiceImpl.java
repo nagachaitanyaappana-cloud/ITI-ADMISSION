@@ -1,6 +1,7 @@
 package com.server.backend.service.Implant;
 
 import com.server.backend.DTO.Implant.IndustryTradeMappingRequest;
+import com.server.backend.DTO.Implant.IndustryTradeMappingResponse;
 import com.server.backend.entity.Placements.Industries;
 import com.server.backend.entity.Placements.IndustryMaster;
 import com.server.backend.Repository.PlacementsRepositories.IndustriesRepository;
@@ -108,5 +109,141 @@ public class IndustryTradeMappingServiceImpl
         industriesRepository.save(mapping);
 
         return "Industry and trade mapped successfully";
+}
+@Override
+@Transactional
+public String updateIndustryTradeMapping(
+        Long slno,
+        IndustryTradeMappingRequest request) {
+
+    // 1. Validate slno
+    if (slno == null) {
+        throw new RuntimeException("Mapping ID (slno) is required");
     }
+
+    // 2. Validate request
+    if (request.getItiCode() == null) {
+        throw new RuntimeException("ITI code is required");
+    }
+
+    if (request.getIndustryId() == null) {
+        throw new RuntimeException("Industry ID is required");
+    }
+
+    if (request.getTradeCode() == null) {
+        throw new RuntimeException("Trade code is required");
+    }
+
+    // 3. Find existing mapping
+    Industries mapping =
+            industriesRepository.findById(slno)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Industry-trade mapping not found: " + slno
+                            )
+                    );
+
+    // 4. Check duplicate mapping
+    // Ignore the current row being edited
+    boolean alreadyExists =
+            industriesRepository
+                    .existsByItiCodeAndIndustryIdAndTradeCodeAndSlnoNot(
+                            request.getItiCode(),
+                            request.getIndustryId(),
+                            request.getTradeCode(),
+                            slno
+                    );
+
+    if (alreadyExists) {
+        throw new RuntimeException(
+                "This industry and trade is already mapped to this ITI"
+        );
+    }
+
+    // 5. Get industry master information
+    IndustryMaster industryMaster =
+            industryMasterRepository
+                    .findById(request.getIndustryId())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Industry not found: "
+                                            + request.getIndustryId()
+                            )
+                    );
+
+    // 6. Update existing mapping
+    mapping.setItiCode(request.getItiCode());
+
+    mapping.setIndustryId(
+            industryMaster.getIndustryId()
+    );
+
+    mapping.setIndustryName(
+            industryMaster.getIndustryName()
+    );
+
+    mapping.setIndustryType(
+            industryMaster.getIndustryType()
+    );
+
+    mapping.setTradeCode(
+            request.getTradeCode()
+    );
+
+    mapping.setTradeName(
+            request.getTradeName()
+    );
+
+    mapping.setTradeShort(
+            request.getTradeShort()
+    );
+
+    mapping.setEntryTime(
+            new Timestamp(System.currentTimeMillis())
+    );
+
+    // 7. Save updated mapping
+    industriesRepository.save(mapping);
+
+    return "Industry and trade mapping updated successfully";
+}
+@Override
+@Transactional(readOnly = true)
+public IndustryTradeMappingResponse getIndustryTradeMapping(
+        Long slno) {
+
+    Industries mapping =
+            industriesRepository.findById(slno)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Industry-trade mapping not found: " + slno
+                            )
+                    );
+
+    return new IndustryTradeMappingResponse(
+            mapping.getSlno(),
+            mapping.getItiCode(),
+            mapping.getIndustryId(),
+            mapping.getIndustryName(),
+            mapping.getIndustryType(),
+            mapping.getTradeCode(),
+            mapping.getTradeName(),
+            mapping.getTradeShort(),
+            mapping.getEntryTime()
+    );
+}
+ @Override
+ @Transactional
+public void deleteIndustryTradeMapping(Long slno) {
+
+    Industries mapping =
+            industriesRepository.findById(slno)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Industry-trade mapping not found: " + slno
+                            )
+                    );
+
+ industriesRepository.delete(mapping);
+}
 }

@@ -25,6 +25,7 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
       Boolean existsByItiCodeAndIndustryIdAndTradeCode(
               Integer itiCode, Long industryId, Integer tradeCode
       );
+<<<<<<< HEAD
 @Query(value = """
     SELECT
         i.implant_id,
@@ -62,3 +63,12 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
     ORDER BY i.implant_id
     """, nativeQuery = true)
 List<Object[]> getReportData(@Param("itiCode") Integer itiCode);}  
+=======
+      boolean existsByItiCodeAndIndustryIdAndTradeCodeAndSlnoNot(
+        Integer itiCode,
+        Long industryId,
+        Integer tradeCode,
+        Long slno
+);
+}  
+>>>>>>> d5b9403db7405ec5edd980a489682f5629014d82
