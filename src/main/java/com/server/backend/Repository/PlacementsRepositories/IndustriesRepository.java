@@ -25,45 +25,6 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
       Boolean existsByItiCodeAndIndustryIdAndTradeCode(
               Integer itiCode, Long industryId, Integer tradeCode
       );
-<<<<<<< HEAD
-@Query(value = """
-    SELECT
-        i.implant_id,
-        it.iti_name,
-        ind.industry_name,
-        i.faculty_name,
-        ind.trade_name,
-        i.industry_address,
-        i.hr_no,
-        i.from_date,
-        i.to_date,
-        i.no_of_days,
-        i.no_of_students,
-        sm.statename,
-        dm.dist_name,
-        i.location,
-        i.description
-    FROM implant.implant i
-
-    JOIN implant.industries ind
-        ON CAST(i.iti_code AS INTEGER) = ind.iti_code
-       AND i.trade_short = ind.trade_short
-
-    JOIN iti it
-        ON i.iti_code = it.iti_code
-
-    LEFT JOIN dist_mst dm
-        ON it.dist_code = dm.dist_code
-
-    LEFT JOIN states_mast sm
-        ON dm.statecode = sm.statecode
-
-    WHERE i.iti_code = :itiCode
-
-    ORDER BY i.implant_id
-    """, nativeQuery = true)
-List<Object[]> getReportData(@Param("itiCode") Integer itiCode);}  
-=======
       boolean existsByItiCodeAndIndustryIdAndTradeCodeAndSlnoNot(
         Integer itiCode,
         Long industryId,
@@ -71,4 +32,3 @@ List<Object[]> getReportData(@Param("itiCode") Integer itiCode);}
         Long slno
 );
 }  
->>>>>>> d5b9403db7405ec5edd980a489682f5629014d82
