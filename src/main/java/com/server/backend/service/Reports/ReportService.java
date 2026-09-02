@@ -3,6 +3,7 @@ package com.server.backend.service.Reports;
 import java.util.List;
 
 import com.server.backend.DTO.Reports.AdmissionReportDetailResponse;
+import com.server.backend.DTO.Reports.NotAdmittedStudentResponse;
 import com.server.backend.DTO.Reports.AdmissionReportResponse;
 import com.server.backend.DTO.Reports.AllResourceRoleResponse;
 import com.server.backend.DTO.Reports.ApiDashboardResponse;
@@ -26,7 +27,7 @@ import com.server.backend.DTO.Reports.TodayScheduleResponse;
 import com.server.backend.DTO.Reports.TradeDurationSeatsResponse;
 import com.server.backend.DTO.Reports.TradeWiseReportResponse;
 import com.server.backend.DTO.Reports.TradeWiseVacantResponse;
-import com.server.backend.DTO.Reports.VerifiedApplicationCountResponse;
+//import com.server.backend.DTO.Reports.VerifiedApplicationCountResponse;
 import com.server.backend.DTO.Reports.VerifiedApplicationCountReportResponse;
 import com.server.backend.DTO.Reports.DscOptionsResponse;
 import com.server.backend.DTO.Reports.CurrentAdmissionPhaseResponse;
@@ -119,4 +120,12 @@ public interface ReportService {
 
     // 26. Current Admission Phase
     CurrentAdmissionPhaseResponse getCurrentAdmissionPhase();
+
+    // 27. Students Not Admitted
+    List<String> getStudentsNotAdmittedYears();
+
+    // 27. Students Not Admitted
+    List<NotAdmittedStudentResponse> getStudentsNotAdmitted(String year, Integer phase, int page, int size);
+
+    long countStudentsNotAdmitted(String year, Integer phase);
 }
