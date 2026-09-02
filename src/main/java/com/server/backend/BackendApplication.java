@@ -27,7 +27,5 @@ public class BackendApplication extends SpringBootServletInitializer {
     @Bean
     public CommandLineRunner runDbCheck(DbConnectionChecker dbChecker) {
         return args -> {
-            dbChecker.checkConnection();
-        };
-    }
+            dbChecker.checkConnection();    }
 }
