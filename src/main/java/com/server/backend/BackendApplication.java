@@ -30,3 +30,4 @@ public class BackendApplication extends SpringBootServletInitializer {
             dbChecker.checkConnection();    
         };
 }
+}
