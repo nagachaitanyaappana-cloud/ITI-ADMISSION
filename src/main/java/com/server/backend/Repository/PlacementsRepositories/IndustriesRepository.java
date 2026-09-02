@@ -25,5 +25,10 @@ public interface IndustriesRepository extends JpaRepository<Industries, Long> {
       Boolean existsByItiCodeAndIndustryIdAndTradeCode(
               Integer itiCode, Long industryId, Integer tradeCode
       );
-
+      boolean existsByItiCodeAndIndustryIdAndTradeCodeAndSlnoNot(
+        Integer itiCode,
+        Long industryId,
+        Integer tradeCode,
+        Long slno
+);
 }  
