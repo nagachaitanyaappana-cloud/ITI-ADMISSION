@@ -1,7 +1,7 @@
 package com.server.backend.controller.Implant;
 
 import java.util.List;
-
+import com.server.backend.DTO.Implant.ImplantReportResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -117,8 +117,8 @@ public ResponseEntity<List<Object[]>> getIndustries(
 }
 //report endpoint to fetch the report based on itiCode
     @GetMapping("/report")
-public ResponseEntity<List<ImplantResponse>> getReport(
-        @RequestParam Integer itiCode) {
+public ResponseEntity<List<ImplantReportResponse>> getReport(
+        @RequestParam String itiCode) {
 
     return ResponseEntity.ok(
             implantService.getReport(itiCode)
