@@ -4,11 +4,10 @@ import com.server.backend.DTO.Industries.ImplantIndustryResponse;
 import com.server.backend.service.Implant.ImplantReportService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/inplant-report")
+@RequestMapping("/api/implant-report")
 public class ImplantReportController {
 
     private final ImplantReportService service;
@@ -25,4 +24,12 @@ public class ImplantReportController {
                 service.getIndustries(itiCode)
         );
     }
+
+    @GetMapping("/report")
+public ResponseEntity<?> getReport(
+        @RequestParam Integer industryId) {
+
+    return ResponseEntity.ok(
+            service.getImplantReportByIndustry(industryId));
+}
 }
