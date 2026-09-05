@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.server.backend.Repository.LabsReportRepository;
-import com.server.backend.service.LabsReportService;
+//import com.server.backend.service.LabsReportService;
 import com.server.backend.DTO.LabsReportDTO;
 
 @Service
