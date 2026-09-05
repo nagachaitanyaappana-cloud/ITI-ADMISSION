@@ -5,8 +5,8 @@ import com.server.backend.DTO.Implant.IndustryMasterResponse;
 import com.server.backend.entity.Placements.IndustryMaster;
 import com.server.backend.Repository.PlacementsRepositories.IndustryMasterRepository;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.sql.Timestamp;
+import java.util.List;
 @Service
 public class IndustryMasterServiceImpl implements IndustryMasterService {
 
@@ -38,4 +38,64 @@ public class IndustryMasterServiceImpl implements IndustryMasterService {
                 savedEntity.getIndustryAddress()
         );
     }
+    @Override
+public List<IndustryMasterResponse> getAllIndustries() {
+
+    return repository.findAll()
+            .stream()
+            .map(industry -> new IndustryMasterResponse(
+                    industry.getIndustryId(),
+                    industry.getIndustryName(),
+                    industry.getIndustryType(),
+                    industry.getIndustryAddress()
+            ))
+            .toList();
+}
+@Override
+public IndustryMasterResponse getIndustryById(Long industryId) {
+
+    IndustryMaster industry = repository.findById(industryId)
+            .orElseThrow(() ->
+                    new RuntimeException("Industry not found with ID: " + industryId));
+
+    return new IndustryMasterResponse(
+            industry.getIndustryId(),
+            industry.getIndustryName(),
+            industry.getIndustryType(),
+            industry.getIndustryAddress()
+    );
+}
+@Override
+public IndustryMasterResponse updateIndustry(
+        Long industryId,
+        IndustryMasterRequest request) {
+
+    IndustryMaster industry = repository.findById(industryId)
+            .orElseThrow(() ->
+                    new RuntimeException("Industry not found with ID: " + industryId));
+
+    industry.setIndustryName(request.getIndustryName());
+    industry.setIndustryType(request.getIndustryType());
+    industry.setIndustryAddress(request.getIndustryAddress());
+
+    industry.setEditTime(new Timestamp(System.currentTimeMillis()));
+
+    IndustryMaster updatedIndustry = repository.save(industry);
+
+    return new IndustryMasterResponse(
+            updatedIndustry.getIndustryId(),
+            updatedIndustry.getIndustryName(),
+            updatedIndustry.getIndustryType(),
+            updatedIndustry.getIndustryAddress()
+    );
+}
+@Override
+public void deleteIndustry(Long industryId) {
+
+    IndustryMaster industry = repository.findById(industryId)
+            .orElseThrow(() ->
+                    new RuntimeException("Industry not found with ID: " + industryId));
+
+    repository.delete(industry);
+}
 }
