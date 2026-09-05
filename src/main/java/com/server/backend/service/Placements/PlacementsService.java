@@ -44,4 +44,26 @@ public interface PlacementsService {
     List<Map<String, Object>> getDistrictItis(String distCode);
 
     List<Map<String, Object>> getDistrictPlacementReport(String distCode, String ptype, String year, String itiCode);
+
+    // ===== Placements Entry (ITI) =====
+    Map<String, Object> getCandidateByAdmNum(String admNum, String itiCode);
+
+    List<Map<String, Object>> findCandidatesByName(String name, String itiCode);
+
+    List<Map<String, Object>> getCandidatePlacements(String admNum, String itiCode);
+
+    List<Map<String, Object>> getItiSchedules(String itiCode);
+
+    List<Map<String, Object>> getMasterTrades();
+
+    List<Map<String, Object>> getMasterStates();
+
+    List<Map<String, Object>> getMasterDistricts();
+
+    Map<String, Object> createPlacement(Map<String, Object> req);
+
+    // ===== Placements ITI Report (ITI) =====
+    List<String> getItiPlacementYears(String itiCode);
+
+    List<Map<String, Object>> getItiPlacementReport(String itiCode, String ptype, String year);
 }

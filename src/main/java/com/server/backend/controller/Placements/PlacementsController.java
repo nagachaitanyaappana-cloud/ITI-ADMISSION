@@ -133,4 +133,60 @@ public class PlacementsController {
             @RequestParam(required = false) String itiCode) {
         return ResponseEntity.ok(placementsService.getDistrictPlacementReport(distCode, ptype, year, itiCode));
     }
+
+    // ===== Placements Entry (ITI) =====
+    @GetMapping("/candidate")
+    public ResponseEntity<Map<String, Object>> getCandidate(@RequestParam String admNum, @RequestParam String itiCode) {
+        return ResponseEntity.ok(placementsService.getCandidateByAdmNum(admNum, itiCode));
+    }
+
+    @GetMapping("/candidate/byName")
+    public ResponseEntity<List<Map<String, Object>>> findCandidates(
+            @RequestParam String name, @RequestParam String itiCode) {
+        return ResponseEntity.ok(placementsService.findCandidatesByName(name, itiCode));
+    }
+
+    @GetMapping("/candidate/placements")
+    public ResponseEntity<List<Map<String, Object>>> getCandidatePlacements(
+            @RequestParam String admNum, @RequestParam String itiCode) {
+        return ResponseEntity.ok(placementsService.getCandidatePlacements(admNum, itiCode));
+    }
+
+    @GetMapping("/schedule/itischedules")
+    public ResponseEntity<List<Map<String, Object>>> getItiSchedules(@RequestParam String itiCode) {
+        return ResponseEntity.ok(placementsService.getItiSchedules(itiCode));
+    }
+
+    @GetMapping("/master/trades")
+    public ResponseEntity<List<Map<String, Object>>> getMasterTrades() {
+        return ResponseEntity.ok(placementsService.getMasterTrades());
+    }
+
+    @GetMapping("/master/states")
+    public ResponseEntity<List<Map<String, Object>>> getMasterStates() {
+        return ResponseEntity.ok(placementsService.getMasterStates());
+    }
+
+    @GetMapping("/master/districts")
+    public ResponseEntity<List<Map<String, Object>>> getMasterDistricts() {
+        return ResponseEntity.ok(placementsService.getMasterDistricts());
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<Map<String, Object>> createPlacement(@RequestBody Map<String, Object> req) {
+        return ResponseEntity.ok(placementsService.createPlacement(req));
+    }
+
+    // ===== Placements ITI Report (ITI) =====
+    @GetMapping("/iti/years")
+    public ResponseEntity<List<String>> getItiYears(@RequestParam String itiCode) {
+        return ResponseEntity.ok(placementsService.getItiPlacementYears(itiCode));
+    }
+
+    @GetMapping("/iti/report")
+    public ResponseEntity<List<Map<String, Object>>> getItiReport(
+            @RequestParam String itiCode, @RequestParam String ptype,
+            @RequestParam(required = false) String year) {
+        return ResponseEntity.ok(placementsService.getItiPlacementReport(itiCode, ptype, year));
+    }
 }

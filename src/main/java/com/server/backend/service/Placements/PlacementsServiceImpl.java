@@ -370,4 +370,180 @@ public class PlacementsServiceImpl implements PlacementsService {
                  + "ORDER BY \"itiName\"");
         return jdbcTemplate.queryForList(sql.toString(), params.toArray());
     }
+
+    // ===== Placements Entry (ITI) =====
+    @Override
+    public Map<String, Object> getCandidateByAdmNum(String admNum, String itiCode) {
+        String sql = "SELECT a.name, a.fname, a.adm_num AS admNum, a.iti_code AS itiCode, "
+                   + "COALESCE(i.iti_name, a.iti_code) AS itiName, a.dist_code AS distCode, "
+                   + "COALESCE(d.dist_name, a.dist_code) AS distName, a.trade_code AS tradeCode, "
+                   + "COALESCE(tm.trade_name, CAST(a.trade_code AS text)) AS tradeName, "
+                   + "a.year_of_admission AS admissionYear "
+                   + "FROM admissions.iti_admissions a "
+                   + "LEFT JOIN public.iti i ON i.iti_code = a.iti_code "
+                   + "LEFT JOIN public.dist_mst d ON d.dist_code = a.dist_code "
+                   + "LEFT JOIN public.ititrade_master tm ON tm.trade_code = a.trade_code "
+                   + "WHERE a.adm_num = ? AND a.iti_code = ? "
+                   + "ORDER BY a.year_of_admission DESC LIMIT 1";
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, admNum, itiCode);
+        return rows.isEmpty() ? java.util.Map.of("status", "NOT_FOUND") : rows.get(0);
+    }
+
+    @Override
+    public List<Map<String, Object>> findCandidatesByName(String name, String itiCode) {
+        String sql = "SELECT a.name, a.fname AS \"fatherName\", a.adm_num AS \"admNum\" "
+                   + "FROM admissions.iti_admissions a "
+                   + "WHERE a.iti_code = ? AND UPPER(a.name) LIKE ? "
+                   + "ORDER BY a.name LIMIT 50";
+        return jdbcTemplate.queryForList(sql, itiCode, "%" + name.trim().toUpperCase() + "%");
+    }
+
+    @Override
+    public List<Map<String, Object>> getCandidatePlacements(String admNum, String itiCode) {
+        String sql = "SELECT p.pid AS id, p.ptype, p.passyear AS passYear, p.passmonth AS passMonth, "
+                   + "p.pname_of_company AS company, p.ppostname AS post, p.psalary AS salary, "
+                   + "p.ptrade AS trade, p.pstipendamt AS stipendAmount, "
+                   + "p.paaprstartdate AS apprStart, p.paaprenddate AS apprEnd, "
+                   + "p.phrno AS hrContact, p.pcoursename AS courseName, p.pclgname AS collegeName, "
+                   + "p.pselfemp AS selfEmployment, p.pmonthincome AS monthlyIncome, p.paddress AS address "
+                   + "FROM placements.placements p "
+                   + "WHERE p.adm_num = ? AND p.iti_code = ? "
+                   + "ORDER BY p.entry_date DESC NULLS LAST";
+        return jdbcTemplate.queryForList(sql, admNum, itiCode);
+    }
+
+    @Override
+    public List<Map<String, Object>> getItiSchedules(String itiCode) {
+        String sql = "SELECT s.plcmt_id AS id, s.schedule_date AS date, s.schedule_type AS type, "
+                   + "s.schedule_desc AS description "
+                   + "FROM placements.placements_schedules s "
+                   + "WHERE s.schedule_location = ? "
+                   + "ORDER BY s.schedule_date DESC NULLS LAST";
+        return jdbcTemplate.queryForList(sql, itiCode);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMasterTrades() {
+        String sql = "SELECT trade_code AS tradeCode, trade_name AS tradeName "
+                   + "FROM public.ititrade_master ORDER BY trade_name";
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMasterStates() {
+        String sql = "SELECT statecode AS stateCode, statename AS stateName "
+                   + "FROM public.state_mst ORDER BY statename";
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMasterDistricts() {
+        String sql = "SELECT dist_code AS code, dist_name AS name "
+                   + "FROM public.dist_mst ORDER BY dist_name";
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @Override
+    public Map<String, Object> createPlacement(Map<String, Object> req) {
+        String admNum = (String) req.get("adm_num");
+        String itiCode = (String) req.get("iti_code");
+        String itiName = (String) req.get("iti_name");
+        String distCode = (String) req.get("dist_code");
+        String distName = (String) req.get("dist_name");
+        String name = (String) req.get("name");
+        String ptype = (String) req.get("ptype");
+        String plcmtYear = (String) req.get("plcmtYear");
+        String passmonth = (String) req.get("passmonth");
+        String passyear = (String) req.get("passyear");
+        String tradeCode = (String) req.get("trade_code");
+        String tradeName = (String) req.get("trade_name");
+        String yearOfAdmission = (String) req.get("year_of_admission");
+        String scheduleId = (String) req.get("scheduleId");
+        String entryBy = (String) req.get("entry_by");
+        String entryDistCode = (String) req.get("entry_distcode");
+
+        if (admNum == null || itiCode == null || ptype == null || plcmtYear == null
+                || admNum.isBlank() || itiCode.isBlank() || ptype.isBlank() || plcmtYear.isBlank()) {
+            return java.util.Map.of("status", "ERROR", "message", "Admission Number, Placement Type and Placement Year are required.");
+        }
+        boolean isJobLike = ptype.equalsIgnoreCase("Job") || ptype.equalsIgnoreCase("OJ");
+        if (isJobLike) {
+            if (isEmpty(req.get("pname_of_company"))) {
+                return java.util.Map.of("status", "ERROR", "message", "Company Name is required.");
+            }
+        } else if (ptype.equalsIgnoreCase("Apprenticeship") || ptype.equalsIgnoreCase("OA")) {
+            if (isEmpty(req.get("ptrade"))) {
+                return java.util.Map.of("status", "ERROR", "message", "Apprenticeship Trade is required.");
+            }
+        } else if (ptype.equalsIgnoreCase("SelfEmployment")) {
+            if (isEmpty(req.get("pselfemp"))) {
+                return java.util.Map.of("status", "ERROR", "message", "Self Employment Name is required.");
+            }
+        } else if (ptype.equalsIgnoreCase("HigherEducation")) {
+            if (isEmpty(req.get("pcoursename"))) {
+                return java.util.Map.of("status", "ERROR", "message", "Course Name is required.");
+            }
+        }
+
+        Integer scheduleDbId = null;
+        if (scheduleId != null && !scheduleId.isBlank()) {
+            try { scheduleDbId = Integer.valueOf(scheduleId); } catch (NumberFormatException ignored) { }
+        }
+
+        Integer pid = jdbcTemplate.queryForObject("SELECT nextval('placements.placements_id_seq')", Integer.class);
+
+        jdbcTemplate.update(
+            "INSERT INTO placements.placements "
+          + "(pid, adm_num, dist_code, dist_name, entry_by, entry_distcode, iti_code, iti_name, name, "
+          + " paaprenddate, paaprstartdate, paddress, passmonth, passyear, pclgname, pcoursename, "
+          + " pdistrict, phrno, pmonthincome, pname_of_company, ppostname, psalary, pselfemp, "
+          + " pstate, pstipendamt, ptrade, ptype, schedule_id, trade_code, trade_name, "
+          + " year_of_admission, plcmt_year, entry_date, plcmt_id) "
+          + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), ?)",
+            pid, admNum, distCode, distName, entryBy, entryDistCode, itiCode, itiName, name,
+            (String) req.get("paaprenddate"), (String) req.get("paaprstartdate"), (String) req.get("paddress"),
+            passmonth, passyear, (String) req.get("pclgname"), (String) req.get("pcoursename"),
+            (String) req.get("pdistrict"), (String) req.get("phrno"), (String) req.get("pmonthincome"),
+            (String) req.get("pname_of_company"), (String) req.get("ppostname"), (String) req.get("psalary"),
+            (String) req.get("pselfemp"), (String) req.get("pstate"), (String) req.get("pstipendamt"),
+            (String) req.get("ptrade"), ptype, scheduleDbId, tradeCode, tradeName,
+            yearOfAdmission, plcmtYear, scheduleDbId);
+
+        return java.util.Map.of("status", "SUCCESS", "message", "Placement saved successfully.");
+    }
+
+    @Override
+    public List<String> getItiPlacementYears(String itiCode) {
+        String sql = "SELECT DISTINCT plcmt_year FROM placements.placements "
+                   + "WHERE iti_code = ? AND plcmt_year IS NOT NULL AND plcmt_year <> '' "
+                   + "ORDER BY plcmt_year DESC";
+        return jdbcTemplate.queryForList(sql, String.class, itiCode);
+    }
+
+    @Override
+    public List<Map<String, Object>> getItiPlacementReport(String itiCode, String ptype, String year) {
+        StringBuilder sql = new StringBuilder(
+              "SELECT p.dist_code AS \"distCode\", COALESCE(d.dist_name, p.dist_code) AS \"distName\", "
+            + "COUNT(*) AS \"total\" "
+            + "FROM placements.placements p "
+            + "LEFT JOIN public.dist_mst d ON d.dist_code = p.dist_code "
+            + "WHERE p.iti_code = ? ");
+        List<Object> params = new java.util.ArrayList<>();
+        params.add(itiCode);
+        if (ptype != null && !ptype.isBlank()) {
+            sql.append("AND UPPER(TRIM(p.ptype)) = ? ");
+            params.add(ptype.trim().toUpperCase());
+        }
+        if (year != null && !year.isBlank()) {
+            sql.append("AND p.plcmt_year = ? ");
+            params.add(year);
+        }
+        sql.append("GROUP BY p.dist_code, COALESCE(d.dist_name, p.dist_code) "
+                 + "ORDER BY \"distName\"");
+        return jdbcTemplate.queryForList(sql.toString(), params.toArray());
+    }
+
+    private boolean isEmpty(Object v) {
+        return v == null || v.toString().isBlank();
+    }
 }
