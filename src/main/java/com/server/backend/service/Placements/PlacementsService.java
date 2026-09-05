@@ -28,4 +28,20 @@ public interface PlacementsService {
     List<String> getDistinctAdmissionYears();
 
     List<Map<String, Object>> getStateSkillDevelopmentPlanReport(String year);
+
+    List<Map<String, Object>> getPlacementDataDetailsReport(String year, String itiType);
+
+    // ===== Schedule Entry (visit) =====
+    List<Map<String, Object>> getDistrictScheduleItis(String distCode);
+
+    List<Map<String, Object>> getDistrictSchedules(String distCode);
+
+    Map<String, Object> createSchedule(Map<String, Object> req);
+
+    // ===== Dist Report (visit) =====
+    List<String> getDistrictPlacementYears(String distCode);
+
+    List<Map<String, Object>> getDistrictItis(String distCode);
+
+    List<Map<String, Object>> getDistrictPlacementReport(String distCode, String ptype, String year, String itiCode);
 }

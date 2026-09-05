@@ -2,6 +2,8 @@ package com.server.backend.controller.Placements;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,8 +88,49 @@ public class PlacementsController {
         return ResponseEntity.ok(placementsService.getStateSkillDevelopmentPlanReport(year));
     }
 
+    @GetMapping("/datadetails/report")
+    public ResponseEntity<List<Map<String, Object>>> getDataDetailsReport(
+            @RequestParam String year, @RequestParam String itiType) {
+        return ResponseEntity.ok(placementsService.getPlacementDataDetailsReport(year, itiType));
+    }
+
     @GetMapping("/state/district")
     public ResponseEntity<List<Map<String, Object>>> getDistrictReport(@RequestParam String distCode) {
         return ResponseEntity.ok(placementsService.getDistrictPlacementReport(distCode));
+    }
+
+    // ===== Schedule Entry (district) =====
+    @GetMapping("/schedule/itis")
+    public ResponseEntity<List<Map<String, Object>>> getScheduleItis(@RequestParam String distCode) {
+        return ResponseEntity.ok(placementsService.getDistrictScheduleItis(distCode));
+    }
+
+    @GetMapping("/schedule/list")
+    public ResponseEntity<List<Map<String, Object>>> getSchedules(@RequestParam String distCode) {
+        return ResponseEntity.ok(placementsService.getDistrictSchedules(distCode));
+    }
+
+    @PostMapping("/schedule")
+    public ResponseEntity<Map<String, Object>> createSchedule(@RequestBody Map<String, Object> req) {
+        return ResponseEntity.ok(placementsService.createSchedule(req));
+    }
+
+    // ===== Dist Report (district) =====
+    @GetMapping("/district/years")
+    public ResponseEntity<List<String>> getDistrictYears(@RequestParam String distCode) {
+        return ResponseEntity.ok(placementsService.getDistrictPlacementYears(distCode));
+    }
+
+    @GetMapping("/district/itis")
+    public ResponseEntity<List<Map<String, Object>>> getDistrictItis(@RequestParam String distCode) {
+        return ResponseEntity.ok(placementsService.getDistrictItis(distCode));
+    }
+
+    @GetMapping("/district/report")
+    public ResponseEntity<List<Map<String, Object>>> getDistrictReportData(
+            @RequestParam String distCode, @RequestParam String ptype,
+            @RequestParam(required = false) String year,
+            @RequestParam(required = false) String itiCode) {
+        return ResponseEntity.ok(placementsService.getDistrictPlacementReport(distCode, ptype, year, itiCode));
     }
 }

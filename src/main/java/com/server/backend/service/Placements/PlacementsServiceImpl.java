@@ -224,4 +224,150 @@ public class PlacementsServiceImpl implements PlacementsService {
                    + "ORDER BY \"tradeName\"";
         return jdbcTemplate.queryForList(sql, year, year);
     }
+
+    /** Placement Data Details (current year + seniors): per-ITI admitted (1yr/2yr trades via
+     *  ititrade_master.durationyrs months) vs placements of the passed year by ptype group. */
+    @Override
+    public List<Map<String, Object>> getPlacementDataDetailsReport(String year, String itiType) {
+        StringBuilder sql = new StringBuilder(
+              "SELECT COALESCE(d.dist_name, i.dist_code) AS \"district\", "
+            + "COALESCE(i.iti_name, a.iti_code) AS \"iti\", "
+            + "a.iti_code AS \"misCode\", "
+            + "COUNT(*) FILTER (WHERE tm.durationyrs = 12) AS \"admitted1Year\", "
+            + "COUNT(*) FILTER (WHERE tm.durationyrs = 24) AS \"admitted2Year\", "
+            + "COUNT(*) AS \"totalAppeared\", "
+            + "COALESCE(pl.jobOJ, 0) AS \"campusDirect\", "
+            + "COALESCE(pl.appOA, 0) AS \"apprenticeshipOA\", "
+            + "COALESCE(pl.selfEmp, 0) AS \"selfEmployment\", "
+            + "COALESCE(pl.higherEdu, 0) AS \"higherEducation\", "
+            + "COALESCE(pl.totalPlcmts, 0) AS \"totalPlacements\" "
+            + "FROM admissions.iti_admissions a "
+            + "JOIN public.iti i ON i.iti_code = a.iti_code "
+            + "LEFT JOIN public2.dist_mst d ON d.dist_code = i.dist_code "
+            + "JOIN public.ititrade_master tm ON tm.trade_code = a.trade_code "
+            + "LEFT JOIN (SELECT iti_code, "
+            + "          COUNT(*) FILTER (WHERE UPPER(TRIM(ptype)) IN ('JOB', 'OJ')) AS jobOJ, "
+            + "          COUNT(*) FILTER (WHERE UPPER(TRIM(ptype)) IN ('APPRENTICESHIP', 'OA')) AS appOA, "
+            + "          COUNT(*) FILTER (WHERE UPPER(TRIM(ptype)) = 'SELFEMPLOYMENT') AS selfEmp, "
+            + "          COUNT(*) FILTER (WHERE UPPER(TRIM(ptype)) = 'HIGHEREDUCATION') AS higherEdu, "
+            + "          COUNT(*) AS totalPlcmts "
+            + "          FROM placements.placements WHERE plcmt_year = ? GROUP BY iti_code) pl "
+            + "          ON pl.iti_code = a.iti_code "
+            + "WHERE a.year_of_admission::text = ?::text ");
+        if ("G".equalsIgnoreCase(itiType) || "P".equalsIgnoreCase(itiType)) {
+            sql.append("AND i.govt = ? ");
+        }
+        sql.append("GROUP BY COALESCE(d.dist_name, i.dist_code), COALESCE(i.iti_name, a.iti_code), a.iti_code, "
+                 + "pl.jobOJ, pl.appOA, pl.selfEmp, pl.higherEdu, pl.totalPlcmts "
+                 + "ORDER BY \"district\", \"iti\"");
+        if ("G".equalsIgnoreCase(itiType) || "P".equalsIgnoreCase(itiType)) {
+            return jdbcTemplate.queryForList(sql.toString(), year, year, itiType.toUpperCase());
+        }
+        return jdbcTemplate.queryForList(sql.toString(), year, year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDistrictScheduleItis(String distCode) {
+        String sql = "SELECT iti_code AS \"itiCode\", iti_name AS \"itiName\" "
+                   + "FROM public.iti WHERE dist_code = ? AND iti_code IS NOT NULL "
+                   + "ORDER BY iti_name";
+        return jdbcTemplate.queryForList(sql, distCode);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDistrictSchedules(String distCode) {
+        String sql = "SELECT s.plcmt_id AS \"id\", "
+                   + "COALESCE(i.iti_name, s.schedule_location) AS \"location\", "
+                   + "s.schedule_date AS \"date\", s.schedule_type AS \"type\", "
+                   + "s.schedule_desc AS \"description\" "
+                   + "FROM placements.placements_schedules s "
+                   + "LEFT JOIN public.iti i ON i.iti_code = s.schedule_location "
+                   + "WHERE s.dist_code = ? "
+                   + "ORDER BY s.schedule_date DESC NULLS LAST, s.plcmt_id DESC";
+        return jdbcTemplate.queryForList(sql, distCode);
+    }
+
+    @Override
+    public Map<String, Object> createSchedule(Map<String, Object> req) {
+        String distCode = (String) req.get("distCode");
+        String scheduleType = (String) req.get("scheduleType");
+        String scheduleDate = (String) req.get("scheduleDate");
+        String scheduleLocation = (String) req.get("scheduleLocation");
+        String scheduleDesc = (String) req.get("scheduleDesc");
+
+        if (distCode == null || distCode.isBlank()) {
+            return Map.of("status", "ERROR", "message", "Missing district code.");
+        }
+        if (scheduleType == null || scheduleLocation == null || scheduleDate == null
+                || scheduleType.isBlank() || scheduleLocation.isBlank() || scheduleDate.isBlank()) {
+            return Map.of("status", "ERROR", "message", "Schedule Type, Date and Location are required.");
+        }
+        if (!"Job".equalsIgnoreCase(scheduleType) && !"Apprenticeship".equalsIgnoreCase(scheduleType)) {
+            return Map.of("status", "ERROR", "message", "Invalid schedule type.");
+        }
+
+        // Duplicate check: same district + date + location + type already exists
+        Integer dup = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM placements.placements_schedules "
+          + "WHERE dist_code = ? AND schedule_date = ? AND schedule_location = ? "
+          + "AND UPPER(TRIM(schedule_type)) = ?",
+            Integer.class, distCode, scheduleDate, scheduleLocation, scheduleType.toUpperCase().trim());
+        if (dup != null && dup > 0) {
+            return Map.of("status", "ERROR",
+                "message", "Schedule already exists for this ITI, date and type.");
+        }
+
+        jdbcTemplate.update(
+            "INSERT INTO placements.placements_schedules "
+          + "(dist_code, schedule_date, schedule_type, schedule_location, schedule_desc, "
+          + " no_of_vacancies, no_of_attended_candidates, no_of_selected_candidates, "
+          + " entry_by, entry_date_time) "
+          + "VALUES (?, ?, ?, ?, ?, NULL, NULL, NULL, ?, now())",
+            distCode, scheduleDate, scheduleType, scheduleLocation, scheduleDesc, distCode);
+
+        return Map.of("status", "SUCCESS", "message", "Schedule saved successfully.");
+    }
+
+    @Override
+    public List<String> getDistrictPlacementYears(String distCode) {
+        String sql = "SELECT DISTINCT plcmt_year FROM placements.placements "
+                   + "WHERE dist_code = ? AND plcmt_year IS NOT NULL AND plcmt_year <> '' "
+                   + "ORDER BY plcmt_year DESC";
+        return jdbcTemplate.queryForList(sql, String.class, distCode);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDistrictItis(String distCode) {
+        String sql = "SELECT iti_code AS \"itiCode\", iti_name AS \"itiName\" "
+                   + "FROM public.iti WHERE dist_code = ? AND iti_code IS NOT NULL "
+                   + "ORDER BY iti_name";
+        return jdbcTemplate.queryForList(sql, distCode);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDistrictPlacementReport(String distCode, String ptype, String year, String itiCode) {
+        StringBuilder sql = new StringBuilder(
+              "SELECT p.iti_code AS \"itiCode\", COALESCE(i.iti_name, p.iti_code) AS \"itiName\", "
+            + "COUNT(*) AS \"total\" "
+            + "FROM placements.placements p "
+            + "LEFT JOIN public.iti i ON i.iti_code = p.iti_code "
+            + "WHERE p.dist_code = ? ");
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        params.add(distCode);
+        if (ptype != null && !ptype.isBlank()) {
+            sql.append("AND UPPER(TRIM(p.ptype)) = ? ");
+            params.add(ptype.trim().toUpperCase());
+        }
+        if (year != null && !year.isBlank()) {
+            sql.append("AND p.plcmt_year = ? ");
+            params.add(year);
+        }
+        if (itiCode != null && !itiCode.isBlank()) {
+            sql.append("AND p.iti_code = ? ");
+            params.add(itiCode);
+        }
+        sql.append("GROUP BY p.iti_code, COALESCE(i.iti_name, p.iti_code) "
+                 + "ORDER BY \"itiName\"");
+        return jdbcTemplate.queryForList(sql.toString(), params.toArray());
+    }
 }
