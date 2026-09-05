@@ -39,4 +39,9 @@ public interface ImplantRepository extends JpaRepository<ImplantEntity, Long> {
     ORDER BY i.implant_id
     """, nativeQuery = true)
 List<Object[]> getReportData(@Param("itiCode") String itiCode);    
+
+
 }
+
+
+
