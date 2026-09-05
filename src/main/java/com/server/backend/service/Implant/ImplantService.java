@@ -3,6 +3,7 @@ import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
 import java.util.List;
+import com.server.backend.DTO.Implant.ImplantReportResponse;
 public interface ImplantService {
     InplantDashboardResponse getInplantDashboardDetails();
     ImplantResponse createImplant(ImplantCreateRequest request);
@@ -12,7 +13,7 @@ public interface ImplantService {
     ImplantResponse getImplantById(Long implantId);
     List<Object[]> getItis();
     List<Object[]> getIndustries(Integer itiCode);
-    List<ImplantResponse> getReport(Integer itiCode);
+    List<ImplantReportResponse> getReport(String itiCode);
     ImplantResponse updateImplant(Long implantId, ImplantCreateRequest request);
     void deleteImplant(Long implantId);
 }
