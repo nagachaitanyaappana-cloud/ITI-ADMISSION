@@ -14,6 +14,8 @@ public interface ImplantService {
     List<Object[]> getItis();
     List<Object[]> getIndustries(Integer itiCode);
     List<ImplantReportResponse> getReport(String itiCode);
+    List<Object[]> getDistrictItis(String distCode);
+    List<ImplantReportResponse> getDistrictReport(String itiCode, Integer industryId);
     ImplantResponse updateImplant(Long implantId, ImplantCreateRequest request);
     void deleteImplant(Long implantId);
 }

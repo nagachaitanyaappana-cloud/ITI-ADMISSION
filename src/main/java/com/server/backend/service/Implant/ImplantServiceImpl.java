@@ -196,6 +196,98 @@ dto.setDescription((String) row[14]);
 
     return response;
 }
+
+    @Override
+    public List<Object[]> getDistrictItis(String distCode) {
+        String sql = "SELECT iti_code, iti_name FROM public.iti WHERE dist_code = ? ORDER BY iti_name";
+        return jdbcTemplate.queryForList(sql, distCode).stream()
+                .map(m -> new Object[]{m.get("iti_code"), m.get("iti_name")})
+                .toList();
+    }
+
+    @Override
+    public List<ImplantReportResponse> getDistrictReport(String itiCode, Integer industryId) {
+        StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<>();
+        sql.append("""
+            SELECT
+                i.implant_id,
+                it.iti_name,
+                ind.industry_name,
+                i.faculty_name,
+                ind.trade_name,
+                i.industry_address,
+                i.hr_no,
+                i.from_date,
+                i.to_date,
+                i.no_of_days,
+                i.no_of_students,
+                sm.statename,
+                dm.dist_name,
+                i.location,
+                i.description
+            FROM implant.implant i
+            JOIN implant.industries ind
+                ON CAST(i.iti_code AS INTEGER) = ind.iti_code
+               AND i.trade_short = ind.trade_short
+            LEFT JOIN public.iti it
+                ON CAST(i.iti_code AS INTEGER) = it.iti_code
+            LEFT JOIN public2.dist_mst dm
+                ON it.dist_code = dm.dist_code
+            LEFT JOIN public.states_mast sm
+                ON dm.statecode = sm.statecode
+            WHERE 1=1
+        """);
+        if (itiCode != null && !itiCode.isBlank()) {
+            sql.append(" AND i.iti_code = ? ");
+            params.add(itiCode);
+        }
+        if (industryId != null) {
+            sql.append(" AND ind.industry_id = ? ");
+            params.add(industryId);
+        }
+        sql.append(" ORDER BY i.implant_id ");
+
+        List<Object[]> rows = jdbcTemplate.query(sql.toString(), params.toArray(), (rs, rowNum) -> {
+            Object[] row = new Object[15];
+            row[0] = rs.getLong("implant_id");
+            row[1] = rs.getString("iti_name");
+            row[2] = rs.getString("industry_name");
+            row[3] = rs.getString("faculty_name");
+            row[4] = rs.getString("trade_name");
+            row[5] = rs.getString("industry_address");
+            row[6] = rs.getObject("hr_no");
+            row[7] = rs.getObject("from_date");
+            row[8] = rs.getObject("to_date");
+            row[9] = rs.getObject("no_of_days");
+            row[10] = rs.getObject("no_of_students");
+            row[11] = rs.getString("statename");
+            row[12] = rs.getString("dist_name");
+            row[13] = rs.getString("location");
+            row[14] = rs.getString("description");
+            return row;
+        });
+
+        List<ImplantReportResponse> response = new ArrayList<>();
+        for (Object[] row : rows) {
+            ImplantReportResponse dto = new ImplantReportResponse();
+            dto.setImplantId(((Number) row[0]).longValue());
+            dto.setItiName((String) row[1]);
+            dto.setIndustryName((String) row[2]);
+            dto.setFacultyName((String) row[3]);
+            dto.setTradeName((String) row[4]);
+            dto.setIndustryAddress((String) row[5]);
+            dto.setHrNo(row[6] == null ? null : ((Number) row[6]).longValue());
+            dto.setFromDate(row[7] == null ? null : ((java.sql.Date) row[7]).toLocalDate());
+            dto.setToDate(row[8] == null ? null : ((java.sql.Date) row[8]).toLocalDate());
+            dto.setNoOfDays(row[9] == null ? null : ((Number) row[9]).intValue());
+            dto.setNoOfStudents(row[10] == null ? null : ((Number) row[10]).intValue());
+            dto.setStateName((String) row[11]);
+            dto.setDistrictName((String) row[12]);
+            dto.setLocation((String) row[13]);
+            dto.setDescription((String) row[14]);
+            response.add(dto);
+        }
+        return response;
+    }
 }
-
-

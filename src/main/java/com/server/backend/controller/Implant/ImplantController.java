@@ -124,4 +124,17 @@ public ResponseEntity<List<ImplantReportResponse>> getReport(
             implantService.getReport(itiCode)
     );
 }
+
+    @GetMapping("/district/itis")
+    public ResponseEntity<List<Object[]>> getDistrictItis(
+            @RequestParam String distCode) {
+        return ResponseEntity.ok(implantService.getDistrictItis(distCode));
+    }
+
+    @GetMapping("/district/report")
+    public ResponseEntity<List<ImplantReportResponse>> getDistrictReport(
+            @RequestParam(required = false) String itiCode,
+            @RequestParam(required = false) Integer industryId) {
+        return ResponseEntity.ok(implantService.getDistrictReport(itiCode, industryId));
+    }
 }
