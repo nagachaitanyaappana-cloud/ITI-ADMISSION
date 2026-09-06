@@ -449,4 +449,21 @@ dto.setDescription((String) row[14]);
             throw new IllegalArgumentException("Mapping not found.");
         }
     }
+
+    // ========== NODAL MAPPING LOOKUPS ==========
+
+    @Override
+    public List<Map<String, Object>> getMappingDistricts() {
+        return jdbcTemplate.queryForList(
+                "SELECT DISTINCT d.dist_code, d.dist_name FROM public2.dist_mst d "
+                + "WHERE EXISTS (SELECT 1 FROM public2.iti i WHERE i.dist_code = d.dist_code) "
+                + "ORDER BY d.dist_name");
+    }
+
+    @Override
+    public List<Map<String, Object>> getMappingItis(String distCode) {
+        return jdbcTemplate.queryForList(
+                "SELECT iti_code, iti_name FROM public2.iti WHERE dist_code = ? ORDER BY iti_name",
+                distCode);
+    }
 }

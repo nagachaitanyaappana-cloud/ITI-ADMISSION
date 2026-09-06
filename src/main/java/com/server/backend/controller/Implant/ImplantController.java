@@ -159,6 +159,17 @@ public ResponseEntity<List<Object[]>> getIndustries(
     // ========== INDUSTRY MASTER (Nodal) ==========
     // NOTE: full CRUD already exists in IndustryMasterController (/api/implant/industry-master)
 
+    @GetMapping("/mapping/districts")
+    public ResponseEntity<List<Map<String, Object>>> getMappingDistricts() {
+        return ResponseEntity.ok(implantService.getMappingDistricts());
+    }
+
+    @GetMapping("/mapping/itis")
+    public ResponseEntity<List<Map<String, Object>>> getMappingItis(
+            @RequestParam String distCode) {
+        return ResponseEntity.ok(implantService.getMappingItis(distCode));
+    }
+
     @GetMapping("/report")
 public ResponseEntity<List<ImplantReportResponse>> getReport(
         @RequestParam String itiCode) {

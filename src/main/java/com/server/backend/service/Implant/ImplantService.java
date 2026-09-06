@@ -30,4 +30,8 @@ public interface ImplantService {
     Map<String, Object> saveMapping(Integer itiCode, IndustryMappingRequest request);
     Map<String, Object> updateMapping(Long slno, IndustryMappingRequest request);
     void deleteMapping(Long slno);
+
+    // ========== NODAL MAPPING LOOKUPS ==========
+    List<Map<String, Object>> getMappingDistricts();
+    List<Map<String, Object>> getMappingItis(String distCode);
 }
