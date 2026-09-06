@@ -278,6 +278,64 @@ dto.setDescription((String) row[14]);
     }
 
     @Override
+    public List<ImplantReportResponse> getDatewiseReport(String fromDate, String toDate) {
+        String sql = """
+            SELECT
+                i.implant_id,
+                it.iti_name,
+                ind.industry_name,
+                i.faculty_name,
+                ind.trade_name,
+                i.industry_address,
+                i.hr_no,
+                i.from_date,
+                i.to_date,
+                i.no_of_days,
+                i.no_of_students,
+                sm.statename,
+                dm.dist_name,
+                i.location,
+                i.description
+            FROM implant.implant i
+            LEFT JOIN implant.industries ind
+                ON CAST(i.iti_code AS INTEGER) = ind.iti_code
+               AND i.trade_short = ind.trade_short
+            LEFT JOIN public2.iti it
+                ON i.iti_code = it.iti_code
+            LEFT JOIN public2.dist_mst dm
+                ON it.dist_code = dm.dist_code
+            LEFT JOIN public2.states_mast sm
+                ON dm.statecode = sm.statecode
+                        WHERE i.from_date <= ?::date AND i.to_date >= ?::date
+            ORDER BY i.implant_id
+            """;
+
+        List<ImplantReportResponse> response = new ArrayList<>();
+        jdbcTemplate.query(sql, rs -> {
+            ImplantReportResponse dto = new ImplantReportResponse();
+            dto.setImplantId(rs.getLong("implant_id"));
+            dto.setItiName(rs.getString("iti_name"));
+            dto.setIndustryName(rs.getString("industry_name"));
+            dto.setFacultyName(rs.getString("faculty_name"));
+            dto.setTradeName(rs.getString("trade_name"));
+            dto.setIndustryAddress(rs.getString("industry_address"));
+            dto.setHrNo(rs.getObject("hr_no") == null ? null : rs.getLong("hr_no"));
+            java.sql.Date fd = rs.getDate("from_date");
+            java.sql.Date td = rs.getDate("to_date");
+            dto.setFromDate(fd == null ? null : fd.toLocalDate());
+            dto.setToDate(td == null ? null : td.toLocalDate());
+            dto.setNoOfDays(rs.getObject("no_of_days") == null ? null : rs.getInt("no_of_days"));
+            dto.setNoOfStudents(rs.getObject("no_of_students") == null ? null : rs.getInt("no_of_students"));
+            dto.setStateName(rs.getString("statename"));
+            dto.setDistrictName(rs.getString("dist_name"));
+            dto.setLocation(rs.getString("location"));
+            dto.setDescription(rs.getString("description"));
+            response.add(dto);
+        }, fromDate, toDate);
+        return response;
+    }
+
+    @Override
     public List<ImplantReportResponse> getDistrictReport(String itiCode, Integer industryId) {
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();

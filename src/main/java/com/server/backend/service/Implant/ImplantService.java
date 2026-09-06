@@ -38,4 +38,5 @@ public interface ImplantService {
     List<Map<String, Object>> getNodalMappingReport();
     Map<String, Object> getTraineesCounts();
     List<Map<String, Object>> getTraineesByType(String type);
+    List<ImplantReportResponse> getDatewiseReport(String fromDate, String toDate);
 }

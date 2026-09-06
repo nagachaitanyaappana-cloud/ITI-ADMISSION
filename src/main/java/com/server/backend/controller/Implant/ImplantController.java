@@ -191,6 +191,12 @@ public ResponseEntity<List<Object[]>> getIndustries(
         return ResponseEntity.ok(implantService.getNodalReport());
     }
 
+    @GetMapping("/datewise-report")
+    public ResponseEntity<List<ImplantReportResponse>> getDatewiseReport(
+            @RequestParam String fromDate, @RequestParam String toDate) {
+        return ResponseEntity.ok(implantService.getDatewiseReport(fromDate, toDate));
+    }
+
     @GetMapping("/report")
 public ResponseEntity<List<ImplantReportResponse>> getReport(
         @RequestParam String itiCode) {
