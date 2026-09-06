@@ -278,6 +278,24 @@ dto.setDescription((String) row[14]);
     }
 
     @Override
+    public List<Map<String, Object>> getYearwiseReport(int year, String itiType) {
+        String sql = "SELECT i.iti_code, it.iti_name, dm.dist_name as district_name, " +
+                "COUNT(*) as trainee_admitted, " +
+                "SUM(CASE WHEN i.to_date < CURRENT_DATE THEN 1 ELSE 0 END) as completed, " +
+                "SUM(CASE WHEN i.from_date <= CURRENT_DATE AND i.to_date >= CURRENT_DATE THEN 1 ELSE 0 END) as under_training, " +
+                "SUM(CASE WHEN i.from_date > CURRENT_DATE THEN 1 ELSE 0 END) as balance, " +
+                "COALESCE(SUM(i.no_of_students), 0) as total_students " +
+                "FROM implant.implant i " +
+                "LEFT JOIN public2.iti it ON i.iti_code = it.iti_code " +
+                "LEFT JOIN public2.dist_mst dm ON it.dist_code = dm.dist_code " +
+                "WHERE EXTRACT(YEAR FROM i.from_date) = ? " +
+                "AND it.iti_type = ? " +
+                "GROUP BY i.iti_code, it.iti_name, dm.dist_name " +
+                "ORDER BY dm.dist_name, it.iti_name";
+        return jdbcTemplate.queryForList(sql, year, itiType);
+    }
+
+    @Override
     public List<ImplantReportResponse> getDatewiseReport(String fromDate, String toDate) {
         String sql = """
             SELECT
