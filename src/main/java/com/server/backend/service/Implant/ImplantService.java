@@ -36,4 +36,6 @@ public interface ImplantService {
     List<Map<String, Object>> getMappingDistricts();
     List<Map<String, Object>> getMappingItis(String distCode);
     List<Map<String, Object>> getNodalMappingReport();
+    Map<String, Object> getTraineesCounts();
+    List<Map<String, Object>> getTraineesByType(String type);
 }

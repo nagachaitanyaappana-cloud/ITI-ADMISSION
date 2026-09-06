@@ -530,4 +530,45 @@ dto.setDescription((String) row[14]);
                 "SELECT slno, dist_code, dist_name, iti_code, iti_name, industry_id, industry_name, "
                 + "industry_type, trade_code, trade_name FROM implant.industries ORDER BY dist_name, iti_name, industry_name");
     }
+
+    @Override
+    public Map<String, Object> getTraineesCounts() {
+        Map<String, Object> counts = new java.util.HashMap<>();
+        Integer itis = jdbcTemplate.queryForObject(
+                "SELECT COUNT(DISTINCT iti_code) FROM implant.implant", Integer.class);
+        Integer trades = jdbcTemplate.queryForObject(
+                "SELECT COUNT(DISTINCT trade_short) FROM implant.implant WHERE trade_short IS NOT NULL", Integer.class);
+        Integer inds = jdbcTemplate.queryForObject(
+                "SELECT COUNT(DISTINCT CAST(i.iti_code AS INTEGER) * 100000 + ind.industry_id) "
+                + "FROM implant.implant i JOIN implant.industries ind "
+                + "ON CAST(i.iti_code AS INTEGER)=ind.iti_code AND i.trade_short=ind.trade_short", Integer.class);
+        Long trainees = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(no_of_students),0) FROM implant.implant", Long.class);
+        counts.put("itis", itis);
+        counts.put("industries", inds);
+        counts.put("trades", trades);
+        counts.put("trainees", trainees);
+        return counts;
+    }
+
+    @Override
+    public List<Map<String, Object>> getTraineesByType(String type) {
+        switch (type) {
+            case "itis":
+                return jdbcTemplate.queryForList(
+                        "SELECT DISTINCT iti_code, iti_name FROM public2.iti WHERE iti_code IN "
+                        + "(SELECT DISTINCT iti_code FROM implant.implant) ORDER BY iti_name");
+            case "trades":
+                return jdbcTemplate.queryForList(
+                        "SELECT DISTINCT trade_short, trade_name FROM public2.ititrade_master "
+                        + "WHERE trade_short IN (SELECT DISTINCT trade_short FROM implant.implant WHERE trade_short IS NOT NULL) ORDER BY trade_name");
+            case "industries":
+                return jdbcTemplate.queryForList(
+                        "SELECT DISTINCT ind.industry_id, ind.industry_name FROM implant.implant i "
+                        + "JOIN implant.industries ind ON CAST(i.iti_code AS INTEGER)=ind.iti_code AND i.trade_short=ind.trade_short "
+                        + "ORDER BY ind.industry_name");
+            default:
+                throw new IllegalArgumentException("Unknown trainees report type.");
+        }
+    }
 }

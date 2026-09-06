@@ -175,6 +175,17 @@ public ResponseEntity<List<Object[]>> getIndustries(
         return ResponseEntity.ok(implantService.getNodalMappingReport());
     }
 
+    @GetMapping("/trainees/counts")
+    public ResponseEntity<Map<String, Object>> getTraineesCounts() {
+        return ResponseEntity.ok(implantService.getTraineesCounts());
+    }
+
+    @GetMapping("/trainees")
+    public ResponseEntity<List<Map<String, Object>>> getTraineesByType(
+            @RequestParam String type) {
+        return ResponseEntity.ok(implantService.getTraineesByType(type));
+    }
+
     @GetMapping("/nodal-report")
     public ResponseEntity<List<ImplantReportResponse>> getNodalReport() {
         return ResponseEntity.ok(implantService.getNodalReport());
