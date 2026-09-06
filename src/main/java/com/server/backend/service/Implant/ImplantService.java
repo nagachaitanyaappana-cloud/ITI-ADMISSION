@@ -35,4 +35,5 @@ public interface ImplantService {
     // ========== NODAL MAPPING LOOKUPS ==========
     List<Map<String, Object>> getMappingDistricts();
     List<Map<String, Object>> getMappingItis(String distCode);
+    List<Map<String, Object>> getNodalMappingReport();
 }

@@ -170,6 +170,11 @@ public ResponseEntity<List<Object[]>> getIndustries(
         return ResponseEntity.ok(implantService.getMappingItis(distCode));
     }
 
+    @GetMapping("/mapping-report")
+    public ResponseEntity<List<Map<String, Object>>> getNodalMappingReport() {
+        return ResponseEntity.ok(implantService.getNodalMappingReport());
+    }
+
     @GetMapping("/nodal-report")
     public ResponseEntity<List<ImplantReportResponse>> getNodalReport() {
         return ResponseEntity.ok(implantService.getNodalReport());

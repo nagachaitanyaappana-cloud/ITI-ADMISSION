@@ -523,4 +523,11 @@ dto.setDescription((String) row[14]);
                 "SELECT iti_code, iti_name FROM public2.iti WHERE dist_code = ? ORDER BY iti_name",
                 distCode);
     }
+
+    @Override
+    public List<Map<String, Object>> getNodalMappingReport() {
+        return jdbcTemplate.queryForList(
+                "SELECT slno, dist_code, dist_name, iti_code, iti_name, industry_id, industry_name, "
+                + "industry_type, trade_code, trade_name FROM implant.industries ORDER BY dist_name, iti_name, industry_name");
+    }
 }
