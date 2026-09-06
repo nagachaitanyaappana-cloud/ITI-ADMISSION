@@ -3,6 +3,7 @@ import com.server.backend.DTO.Implant.ImplantReportResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
+import com.server.backend.DTO.Implant.IndustryMappingRequest;
 import com.server.backend.entity.Placements.ImplantEntity;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
@@ -303,5 +304,149 @@ dto.setDescription((String) row[14]);
             response.add(dto);
         }
         return response;
+    }
+
+    // ========== ITI - INDUSTRY MAPPING ==========
+
+    @Override
+    public Map<String, Object> getMappingMasters() {
+        Map<String, Object> masters = new java.util.HashMap<>();
+        masters.put("industries", jdbcTemplate.queryForList(
+                "SELECT industry_id, industry_name, industry_type FROM implant.industry_master ORDER BY industry_name"));
+        masters.put("trades", jdbcTemplate.queryForList(
+                "SELECT trade_code, trade_short, trade_name FROM public2.ititrade_master ORDER BY trade_name"));
+        return masters;
+    }
+
+    @Override
+    public List<Map<String, Object>> getMappings(Integer itiCode) {
+        String sql = "SELECT slno, industry_id, industry_name, industry_type, trade_code, trade_short, trade_name, "
+                + "no_of_units, entry_by, entry_time FROM implant.industries "
+                + "WHERE iti_code = ? ORDER BY slno DESC";
+        return jdbcTemplate.queryForList(sql, itiCode);
+    }
+
+    @Override
+    public Map<String, Object> saveMapping(Integer itiCode, IndustryMappingRequest request) {
+        if (request.getIndustryId() == null || request.getTradeCode() == null) {
+            throw new IllegalArgumentException("Industry and Trade are required.");
+        }
+
+        // industry details from master
+        List<Map<String, Object>> ind = jdbcTemplate.queryForList(
+                "SELECT industry_name, industry_type FROM implant.industry_master WHERE industry_id = ?",
+                request.getIndustryId());
+        if (ind.isEmpty()) {
+            throw new IllegalArgumentException("Selected industry does not exist.");
+        }
+
+        // trade details from master
+        List<Map<String, Object>> trd = jdbcTemplate.queryForList(
+                "SELECT trade_short, trade_name FROM public2.ititrade_master WHERE trade_code = ?",
+                request.getTradeCode());
+        if (trd.isEmpty()) {
+            throw new IllegalArgumentException("Selected trade does not exist.");
+        }
+
+        // ITI details
+        List<Map<String, Object>> iti = jdbcTemplate.queryForList(
+                "SELECT iti_name, dist_code FROM public2.iti WHERE iti_code = ?", String.valueOf(itiCode));
+        if (iti.isEmpty()) {
+            throw new IllegalArgumentException("ITI details not found for code " + itiCode);
+        }
+
+        // duplicate check
+        Integer dup = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM implant.industries WHERE iti_code = ? AND industry_id = ? AND trade_code = ?",
+                Integer.class, itiCode, request.getIndustryId(), request.getTradeCode());
+        if (dup != null && dup > 0) {
+            throw new IllegalArgumentException("This industry is already mapped to your ITI for the selected trade.");
+        }
+
+        String itiName = (String) iti.get(0).get("iti_name");
+        Object distObj = iti.get(0).get("dist_code");
+        Integer distCode = distObj instanceof Number
+                ? ((Number) distObj).intValue()
+                : Integer.parseInt(String.valueOf(distObj).trim());
+        List<Map<String, Object>> dist = jdbcTemplate.queryForList(
+                "SELECT dist_name FROM public2.dist_mst WHERE dist_code = ?", String.valueOf(distCode));
+        String distName = dist.isEmpty() ? "" : (String) dist.get(0).get("dist_name");
+
+        jdbcTemplate.update(
+                "INSERT INTO implant.industries (slno, dist_code, dist_name, industry_id, industry_name, industry_type, "
+                + "iti_code, iti_name, trade_code, trade_name, trade_short, entry_by, entry_time) "
+                + "VALUES ((SELECT COALESCE(MAX(slno), 0) + 1 FROM implant.industries), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())",
+                distCode, distName, request.getIndustryId(), ind.get(0).get("industry_name"),
+                ind.get(0).get("industry_type"), itiCode, itiName, request.getTradeCode(),
+                trd.get(0).get("trade_name"), trd.get(0).get("trade_short"),
+                request.getEntryBy() == null ? String.valueOf(itiCode) : request.getEntryBy());
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("message", "Industry mapped to your ITI successfully!");
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getMappingBySlno(Long slno) {
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT slno, iti_code, industry_id, industry_name, industry_type, trade_code, trade_short, trade_name "
+                + "FROM implant.industries WHERE slno = ?", slno);
+        if (rows.isEmpty()) {
+            throw new IllegalArgumentException("Mapping not found.");
+        }
+        return rows.get(0);
+    }
+
+    @Override
+    public Map<String, Object> updateMapping(Long slno, IndustryMappingRequest request) {
+        if (request.getIndustryId() == null || request.getTradeCode() == null) {
+            throw new IllegalArgumentException("Industry and Trade are required.");
+        }
+
+        List<Map<String, Object>> current = jdbcTemplate.queryForList(
+                "SELECT iti_code FROM implant.industries WHERE slno = ?", slno);
+        if (current.isEmpty()) {
+            throw new IllegalArgumentException("Mapping not found.");
+        }
+
+        List<Map<String, Object>> ind = jdbcTemplate.queryForList(
+                "SELECT industry_name, industry_type FROM implant.industry_master WHERE industry_id = ?",
+                request.getIndustryId());
+        if (ind.isEmpty()) {
+            throw new IllegalArgumentException("Selected industry does not exist.");
+        }
+
+        List<Map<String, Object>> trd = jdbcTemplate.queryForList(
+                "SELECT trade_short, trade_name FROM public2.ititrade_master WHERE trade_code = ?",
+                request.getTradeCode());
+        if (trd.isEmpty()) {
+            throw new IllegalArgumentException("Selected trade does not exist.");
+        }
+
+        Integer itiCode = Integer.parseInt(String.valueOf(current.get(0).get("iti_code")).trim());
+        Integer dup = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM implant.industries WHERE iti_code = ? AND industry_id = ? AND trade_code = ? AND slno <> ?",
+                Integer.class, itiCode, request.getIndustryId(), request.getTradeCode(), slno);
+        if (dup != null && dup > 0) {
+            throw new IllegalArgumentException("This industry is already mapped to your ITI for the selected trade.");
+        }
+
+        jdbcTemplate.update(
+                "UPDATE implant.industries SET industry_id = ?, industry_name = ?, industry_type = ?, "
+                + "trade_code = ?, trade_name = ?, trade_short = ? WHERE slno = ?",
+                request.getIndustryId(), ind.get(0).get("industry_name"), ind.get(0).get("industry_type"),
+                request.getTradeCode(), trd.get(0).get("trade_name"), trd.get(0).get("trade_short"), slno);
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("message", "Industry details updated successfully!");
+        return result;
+    }
+
+    @Override
+    public void deleteMapping(Long slno) {
+        int deleted = jdbcTemplate.update("DELETE FROM implant.industries WHERE slno = ?", slno);
+        if (deleted == 0) {
+            throw new IllegalArgumentException("Mapping not found.");
+        }
     }
 }

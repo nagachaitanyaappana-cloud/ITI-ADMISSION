@@ -1,5 +1,6 @@
 package com.server.backend.service.Implant;
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
+import com.server.backend.DTO.Implant.IndustryMappingRequest;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
 import java.util.List;
@@ -21,4 +22,12 @@ public interface ImplantService {
     List<Map<String, Object>> getDistrictsByState(String stateCode);
     ImplantResponse updateImplant(Long implantId, ImplantCreateRequest request);
     void deleteImplant(Long implantId);
+
+    // ========== ITI - INDUSTRY MAPPING ==========
+    Map<String, Object> getMappingMasters();
+    List<Map<String, Object>> getMappings(Integer itiCode);
+    Map<String, Object> getMappingBySlno(Long slno);
+    Map<String, Object> saveMapping(Integer itiCode, IndustryMappingRequest request);
+    Map<String, Object> updateMapping(Long slno, IndustryMappingRequest request);
+    void deleteMapping(Long slno);
 }

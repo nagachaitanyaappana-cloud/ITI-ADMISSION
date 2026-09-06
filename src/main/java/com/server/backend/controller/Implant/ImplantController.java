@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.server.backend.DTO.Implant.ImplantCreateRequest;
 import com.server.backend.DTO.Implant.ImplantResponse;
 import com.server.backend.DTO.Implant.InplantDashboardResponse;
+import com.server.backend.DTO.Implant.IndustryMappingRequest;
 import com.server.backend.service.Implant.ImplantService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -117,6 +118,47 @@ public ResponseEntity<List<Object[]>> getIndustries(
             implantService.getIndustries(itiCode));
 }
 //report endpoint to fetch the report based on itiCode
+    // ========== ITI - INDUSTRY MAPPING ==========
+    @GetMapping("/mapping/masters")
+    public ResponseEntity<Map<String, Object>> getMappingMasters() {
+        return ResponseEntity.ok(implantService.getMappingMasters());
+    }
+
+    @GetMapping("/mapping")
+    public ResponseEntity<List<Map<String, Object>>> getMappings(
+            @RequestParam Integer itiCode) {
+        return ResponseEntity.ok(implantService.getMappings(itiCode));
+    }
+
+    @PostMapping("/mapping")
+    public ResponseEntity<Map<String, Object>> saveMapping(
+            @RequestParam Integer itiCode,
+            @RequestBody IndustryMappingRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(implantService.saveMapping(itiCode, request));
+    }
+
+    @GetMapping("/mapping/{slno}")
+    public ResponseEntity<Map<String, Object>> getMappingBySlno(@PathVariable Long slno) {
+        return ResponseEntity.ok(implantService.getMappingBySlno(slno));
+    }
+
+    @PutMapping("/mapping/{slno}")
+    public ResponseEntity<Map<String, Object>> updateMapping(
+            @PathVariable Long slno,
+            @RequestBody IndustryMappingRequest request) {
+        return ResponseEntity.ok(implantService.updateMapping(slno, request));
+    }
+
+    @DeleteMapping("/mapping/{slno}")
+    public ResponseEntity<Map<String, Object>> deleteMapping(@PathVariable Long slno) {
+        implantService.deleteMapping(slno);
+        return ResponseEntity.ok(Map.of("message", "Mapping deleted successfully."));
+    }
+
+    // ========== INDUSTRY MASTER (Nodal) ==========
+    // NOTE: full CRUD already exists in IndustryMasterController (/api/implant/industry-master)
+
     @GetMapping("/report")
 public ResponseEntity<List<ImplantReportResponse>> getReport(
         @RequestParam String itiCode) {
