@@ -1,5 +1,6 @@
 package com.server.backend.controller.Implant;
 
+import java.util.Map;
 import java.util.List;
 import com.server.backend.DTO.Implant.ImplantReportResponse;
 import org.springframework.http.HttpStatus;
@@ -136,5 +137,16 @@ public ResponseEntity<List<ImplantReportResponse>> getReport(
             @RequestParam(required = false) String itiCode,
             @RequestParam(required = false) Integer industryId) {
         return ResponseEntity.ok(implantService.getDistrictReport(itiCode, industryId));
+    }
+
+    @GetMapping("/master/states")
+    public ResponseEntity<List<Map<String, Object>>> getStates() {
+        return ResponseEntity.ok(implantService.getStates());
+    }
+
+    @GetMapping("/master/districts")
+    public ResponseEntity<List<Map<String, Object>>> getDistricts(
+            @RequestParam String stateCode) {
+        return ResponseEntity.ok(implantService.getDistrictsByState(stateCode));
     }
 }

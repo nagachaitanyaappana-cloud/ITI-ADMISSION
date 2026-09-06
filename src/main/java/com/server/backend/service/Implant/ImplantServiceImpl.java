@@ -12,6 +12,7 @@ import com.server.backend.Repository.PlacementsRepositories.IndustriesRepository
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.List;
 @Service
 public class ImplantServiceImpl implements ImplantService {
@@ -164,6 +165,19 @@ public void deleteImplant(Long implantId) {
     }
     
      
+
+    @Override
+    public List<Map<String, Object>> getStates() {
+        String sql = "SELECT statecode, statename FROM states_mast ORDER BY statename";
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDistrictsByState(String stateCode) {
+        String sql = "SELECT dist_code, dist_name FROM dist_mst WHERE statecode = ? ORDER BY dist_name";
+        return jdbcTemplate.queryForList(sql, stateCode);
+    }
+
     @Override
 public List<ImplantReportResponse> getReport(String itiCode) {
 
@@ -230,17 +244,17 @@ dto.setDescription((String) row[14]);
             JOIN implant.industries ind
                 ON CAST(i.iti_code AS INTEGER) = ind.iti_code
                AND i.trade_short = ind.trade_short
-            LEFT JOIN public.iti it
-                ON CAST(i.iti_code AS INTEGER) = it.iti_code
-            LEFT JOIN public2.dist_mst dm
+            LEFT JOIN iti it
+                ON i.iti_code = it.iti_code
+            LEFT JOIN dist_mst dm
                 ON it.dist_code = dm.dist_code
-            LEFT JOIN public.states_mast sm
+            LEFT JOIN states_mast sm
                 ON dm.statecode = sm.statecode
             WHERE 1=1
         """);
         if (itiCode != null && !itiCode.isBlank()) {
-            sql.append(" AND i.iti_code = ? ");
-            params.add(itiCode);
+            sql.append(" AND CAST(i.iti_code AS INTEGER) = ? ");
+            params.add(Integer.parseInt(itiCode));
         }
         if (industryId != null) {
             sql.append(" AND ind.industry_id = ? ");
